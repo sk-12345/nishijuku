@@ -18,12 +18,6 @@ body {
     scroll-margin-top: 80px; /* ← ヘッダーの高さ＋ちょい余裕 */
 }
 
-/* リンク */
-a {
-    color: inherit;
-    text-decoration: none;
-}
-
 /* ヘッダー */
 .header {
     background-color: #ffffff;
@@ -154,31 +148,49 @@ a {
 
 /* セクション共通 */
 .section {
-    padding: 40px 16px;
+    padding: 20px 16px;
 }
 
 .section-inner {
     padding: 0px 16px;
-    max-width: 1000px;
+    width: 80%;
     margin: 0px auto;
 }
 
 .section h2 {
-    font-size: 22px;
+    font-size: 2.5vw;
     margin-bottom: 0px;
 }
 
-.shugoImg {
-    background-image: url("img/nisijuku.jpg");
-    background-size: cover; /* ← 画像を画面いっぱいに広げる */
-    background-position: center; /* ← 画像の中央を基準に表示 */
-    background-repeat: no-repeat;
-    background-color: #ffffff;
-    text-align: center;
-    height: 300px;
-    display: flex;
-    align-items: center; /* ← 文字を縦方向センター */
-    justify-content: center; /* ← 文字を横方向センター */
+.section p {
+    font-size: 2.0vw;
+    margin-bottom: 0px;
+}
+
+/* ===== PCサイズ以上のときのレイアウト ===== */
+@media (min-width: 600px) {
+
+    /* PCではヘッダーメニュー表示・ハンバーガー非表示 */
+    .nav {
+        display: block;
+    }
+
+    .nav-toggle {
+        display: none !important; /* ← ここ強めにしてPCで必ず消す */
+    }
+
+    .nav-drawer {
+        display: none !important;
+
+    }
+
+    .hero h1 {
+        font-size: 32px;
+    }
+
+    .section {
+        padding: 20px 16px;
+    }
 }
 
 #map {
@@ -195,31 +207,6 @@ a {
     font-size: 14px;
     cursor: pointer;
 }
-
-/* 背景色付きセクション */
-.section-bg {
-    background-color: #ffffff;
-}
-
-/* カードレイアウト */
-.card-list {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-}
-
-.card {
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-}
-
-    .card h3 {
-        margin-top: 0;
-        margin-bottom: 8px;
-        font-size: 18px;
-    }
 
 /* フォーム */
 .form {
@@ -263,32 +250,46 @@ a {
     border-top: 1px solid #ddd;
 }
 
-/* ===== PCサイズ以上のときのレイアウト ===== */
-@media (min-width: 768px) {
-
-    /* PCではヘッダーメニュー表示・ハンバーガー非表示 */
-    .nav {
-        display: block;
-    }
-
-    .nav-toggle {
-        display: none !important; /* ← ここ強めにしてPCで必ず消す */
-    }
-
-    .nav-drawer {
-        display: none !important;
-    }
-
-    .hero h1 {
-        font-size: 32px;
-    }
-
-    .section {
-        padding: 20px 16px;
-    }
-
-    /* カード3列 */
-    .card-list {
-        grid-template-columns: repeat(3, 1fr);
-    }
+/* 集合写真 */
+.shugoImg {
+    /* 写真変更 */
+    background-image: url("img/syugo.jpg");
+    background-size: cover; /* ← 画像を画面いっぱいに広げる */
+    background-position: center; /* ← 画像の中央を基準に表示 */
+    background-repeat: no-repeat;
+    background-color: #ffffff;
+    text-align: center;
+    width: 80%;
+    aspect-ratio: 16 / 9;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+/* 理念 */
+#nishijukuRinen {
+    font-size: 2vw; /* 好きなサイズに調整OK */
+    width: 100%;
+}
+
+#map {
+    background-size: cover;
+    font-size: 1vw; /* スマホ用に小さくする */
+    width: 100%;
+}
+
+#mapImage {
+    width: 90%;
+    height: 30vw; /* PC の高さ */
+    border: 0;
+    border-radius: 12px;
+    display: block;
+    margin: 5vw auto;
+}
+
+.custom-table {
+    font-size: 2vw;
+    margin-bottom: 0px;
+}
+
