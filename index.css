@@ -163,7 +163,7 @@ body {
 }
 
 .section p {
-    font-size: 2.0vw;
+    font-size: 2vw;
     margin-bottom: 0px;
 }
 
@@ -182,10 +182,6 @@ body {
     .nav-drawer {
         display: none !important;
 
-    }
-
-    .hero h1 {
-        font-size: 32px;
     }
 
     .section {
@@ -250,6 +246,11 @@ body {
     border-top: 1px solid #ddd;
 }
 
+.logo-img {
+    width: 10vw;
+    height: auto;
+}
+
 /* 集合写真 */
 .shugoImg {
     /* 写真変更 */
@@ -269,13 +270,11 @@ body {
 
 /* 理念 */
 #nishijukuRinen {
-    font-size: 2vw; /* 好きなサイズに調整OK */
     width: 100%;
 }
 
 #map {
     background-size: cover;
-    font-size: 1vw; /* スマホ用に小さくする */
     width: 100%;
 }
 
@@ -291,5 +290,24 @@ body {
 .custom-table {
     font-size: 2vw;
     margin-bottom: 0px;
+}
+
+/* スマホ（画面幅480px以下）だけ適用 */
+@media (max-width: 480px) {
+    .section h2 {
+        font-size: 4vw;
+    }
+
+    .section p {
+        font-size: 3vw;
+    }
+
+    .logo-img {
+        width: 20vw;
+        height: auto;
+    }
+    .custom-table {
+        font-size: 2vw;
+    }
 }
 
