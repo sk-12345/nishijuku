@@ -1,0 +1,18 @@
+INSERT INTO users 
+(id, login_id, password_hash, name, role_id, created_at, updated_at)
+VALUES
+(1, 'sys', 
+'$2y$10$abcdefghijklmnopqrstuvABCDEFGHIJKLMNO1234567890', 
+'システムユーザー', 1, NOW(), NOW()),
+
+(2, 'admin', 
+'$2y$10$abcdefghijklmnopqrstuvABCDEFGHIJKLMNO1234567891', 
+'管理者ユーザー', 2, NOW(), NOW()),
+
+(3, 'general', 
+'$2y$10$abcdefghijklmnopqrstuvABCDEFGHIJKLMNO1234567892', 
+'一般ユーザー', 4, NOW(), NOW()),
+
+(4, 'photo', 
+'$2y$10$abcdefghijklmnopqrstuvABCDEFGHIJKLMNO1234567893', 
+'写真ユーザー', 3, NOW(), NOW()););

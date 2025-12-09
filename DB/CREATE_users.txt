@@ -1,0 +1,9 @@
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  login_id VARCHAR(50),
+  password_hash VARCHAR(255),
+  name VARCHAR(50),
+  role_id INT,
+  created_at DATETIME,
+  updated_at DATETIME
+);
