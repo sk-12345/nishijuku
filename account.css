@@ -1,0 +1,69 @@
+* {
+    box-sizing: border-box;
+    font-family: "ÉÅÉCÉäÉI", sans-serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a3d62, #3c6382);
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+.account-wrapper {
+    background: #fff;
+    width: 92vw;
+    max-width: 800px;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #0a3d62;
+}
+
+.account-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .account-table th,
+    .account-table td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: center;
+    }
+
+    .account-table th {
+        background: #f4f6f8;
+    }
+
+.delete-btn {
+    padding: 6px 12px;
+    background: #c0392b;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+    .delete-btn:hover {
+        opacity: 0.9;
+    }
+
+.back {
+    text-align: center;
+    margin-top: 25px;
+}
+
+    .back a {
+        text-decoration: none;
+        color: #0a3d62;
+        font-weight: bold;
+    }
