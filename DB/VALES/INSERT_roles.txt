@@ -1,0 +1,5 @@
+INSERT INTO roles VALUES
+(1, 'SYSTEM', 'システム管理者'),
+(2, 'ADMIN', '管理者'),
+(3, 'PHOTO', '写真ユーザー'),
+(4, 'GENERAL', '一般ユーザー');
