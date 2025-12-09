@@ -1,0 +1,121 @@
+﻿/* 全体初期化 */
+* {
+    box-sizing: border-box;
+    font-family: "メイリオ", sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* 背景 */
+body {
+    height: 100vh;
+    background: radial-gradient(circle, #0a3d62, #1e3799);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 全体ラッパー */
+.home-wrapper {
+    width: 100%;
+    padding: 20px;
+}
+
+/* メインボックス */
+.home-box {
+    background: #ffffff;
+    width: 100%;
+    max-width: 560px;
+    margin: auto;
+    padding: 35px;
+    border-radius: 18px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+    /* タイトル */
+    .home-box h2 {
+        color: #0a3d62;
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+
+/* 権限 */
+.role {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+/* 仕切り線 */
+hr {
+    margin: 25px 0;
+    border: none;
+    border-top: 1px solid #ddd;
+}
+
+/* 見出し */
+.home-box h3 {
+    color: #0a3d62;
+    margin-bottom: 20px;
+}
+
+/* ✅ トランプ配置（横・縦グリッド） */
+.card-menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* ← 横2枚並び */
+    gap: 16px;
+}
+
+/* ✅ トランプ風カード */
+.card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 10px;
+    height: 110px;
+    background: linear-gradient(145deg, #f5f6fa, #dcdde1);
+    border-radius: 16px;
+    text-decoration: none;
+    color: #0a3d62;
+    font-weight: bold;
+    font-size: 15px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+    transition: 0.2s;
+}
+
+    /* 浮き上がる演出 */
+    .card:hover {
+        transform: translateY(-6px) scale(1.03);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    }
+
+/* ✅ メインカード（イベント） */
+.main-card {
+    background: linear-gradient(145deg, #1e3799, #0a3d62);
+    color: #fff;
+}
+
+/* ✅ ログアウトカード */
+.logout-card {
+    background: linear-gradient(145deg, #7f8c8d, #636e72);
+    color: #fff;
+}
+
+/* ✅ PC用（少し大きく） */
+@media screen and (min-width: 768px) {
+    .home-box {
+        padding: 45px;
+    }
+
+        .home-box h2 {
+            font-size: 28px;
+        }
+
+    .card {
+        height: 130px;
+        font-size: 17px;
+    }
+}
+
+
