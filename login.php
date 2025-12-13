@@ -1,13 +1,20 @@
 <?php
 session_start();
+
+// すでにログインしてたらホームへ
+if (isset($_SESSION['user'])) {
+    header("Location: home.php");
+    exit;
+}
+
+// エラー表示用
+$err = isset($_GET['err']);
 ?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <!-- ✅ vw / % を正しく効かせるため必須 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>ログイン | 西塾柔道クラブ</title>
     <link rel="stylesheet" href="login.css">
 </head>
@@ -17,6 +24,10 @@ session_start();
     <div class="login-box">
 
         <h2>ログイン</h2>
+
+        <?php if ($err): ?>
+            <p class="error-msg">ユーザーIDまたはパスワードが違います</p>
+        <?php endif; ?>
 
         <form action="login_process.php" method="POST">
 
@@ -28,7 +39,7 @@ session_start();
 
             <button type="submit">ログイン</button>
 
-            <a href="http://localhost/nishijuku/index.html" class="back-btn">← 戻る</a>
+            <a href="/nishijuku/index.html" class="back-btn">← 戻る</a>
 
         </form>
 

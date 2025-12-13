@@ -7,33 +7,38 @@ $password = $_POST['password'] ?? '';
 
 $sql = "
 SELECT 
-    users.id,
-    users.login_id,
-    users.password_hash,
-    users.name,
-    roles.role_name
-FROM users
-INNER JOIN roles ON users.role_id = roles.id
-WHERE users.login_id = ?
+    u.id,
+    u.login_id,
+    u.password_hash,
+    u.name,
+    u.role_id,
+    r.role_name
+FROM users u
+JOIN roles r ON u.role_id = r.id
+WHERE u.login_id = ?
+LIMIT 1
 ";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$username]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if ($user && $password === $user['password_hash']) {
+// ✅ ここが超重要：=== じゃなく password_verify()
+if ($user && password_verify($password, $user['password_hash'])) {
 
-    // ✅ セッションに必要な情報だけ保存
     $_SESSION['user'] = [
         'id'       => $user['id'],
         'login_id' => $user['login_id'],
         'fullname' => $user['name'],
-        'role'     => $user['role_name']
+        'role'     => strtoupper($user['role_name']),
+        'role_id'  => (int)$user['role_id'],
     ];
 
     header("Location: home.php");
     exit;
 
 } else {
-    echo "ログイン失敗";
+    // 失敗時はログイン画面へ戻す（エラー表示用）
+    header("Location: login.php?err=1");
+    exit;
 }
