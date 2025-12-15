@@ -1,3 +1,6 @@
+-- 西塾DB 初期化
+DROP DATABASE IF EXISTS nishijuku;
+
 CREATE DATABASE nishijuku
   DEFAULT CHARACTER SET utf8mb4
   COLLATE utf8mb4_general_ci;
