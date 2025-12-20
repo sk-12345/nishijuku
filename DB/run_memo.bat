@@ -20,12 +20,12 @@ set "MYSQL_EXE=C:\xampp\mysql\bin\mysql.exe"
 REM DB接続情報
 set "DB_HOST=localhost"
 set "DB_USER=root"
-set "DB_PASS=ここにDBのパスワードを設定"
+set "DB_PASS=kmkr3110"
 
-REM "バッチのフォルダーパス"
+REM "C:\xampp\htdocs\nishijuku\DB\all.bat"
 set "ROOT=%~dp0"
 
-REM "バッチ実行メモのフォルダーパス"
+REM "C:\xampp\htdocs\nishijuku\DB\all.bat"
 set "MEMO_FILE=%ROOT%run_memo.txt"
 REM =================================================================
 
