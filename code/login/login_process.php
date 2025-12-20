@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once '../db.php';
 
 $username = $_POST['username'] ?? '';
 $password = $_POST['password'] ?? '';
@@ -34,11 +34,11 @@ if ($user && password_verify($password, $user['password_hash'])) {
         'role_id'  => (int)$user['role_id'],
     ];
 
-    header("Location: home.php");
+    header("Location: ../home/home.php");
     exit;
 
 } else {
     // 失敗時はログイン画面へ戻す（エラー表示用）
-    header("Location: login.php?err=1");
+    header("Location: ../login/login.php?err=1");
     exit;
 }

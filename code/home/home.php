@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+    header("Location: ../login/login.php");
     exit();
 }
 
@@ -35,18 +35,18 @@ $user = $_SESSION['user'];
         <div class="card-menu">
 
             <?php if ($user['role'] === 'SYSTEM' || $user['role'] === 'ADMIN'): ?>
-                <a href="register.php" class="card">新規アカウント作成</a>
+                <a href="../register/register.php" class="card">新規アカウント作成</a>
             <?php endif; ?>
 
             <?php if ($user['role'] === 'SYSTEM' || $user['role'] === 'ADMIN'): ?>
-                <a href="account_list.php" class="card">アカウント管理</a>
+                <a href="../account/account_list.php" class="card">アカウント管理</a>
             <?php endif; ?>
 
-            <a href="password_change.php" class="card">パスワード変更</a>
+            <a href="../password/password_change.php" class="card">パスワード変更</a>
 
-            <a href="event_post.php" class="card main-card">イベント一覧・投稿</a>
+            <a href="../event_post/event_post.php" class="card main-card">イベント一覧・投稿</a>
 
-            <a href="logout.php" class="card logout-card">ログアウト</a>
+            <a href="../logout.php" class="card logout-card">ログアウト</a>
 
         </div>
 

@@ -1,10 +1,10 @@
 ﻿<?php
 session_start();
-require_once 'db.php';
+require_once '../db.php';
 
 // ✅ ログイン必須
 if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+    header("Location: ../login/login.php");
     exit();
 }
 
@@ -98,7 +98,7 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     </table>
 
-    <p class="back"><a href="home.php">← ホームに戻る</a></p>
+    <p class="back"><a href="../home/home.php">← ホームに戻る</a></p>
 
 </div>
 

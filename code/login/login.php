@@ -3,7 +3,7 @@ session_start();
 
 // すでにログインしてたらホームへ
 if (isset($_SESSION['user'])) {
-    header("Location: home.php");
+    header("Location: ../home/home.php");
     exit;
 }
 
@@ -39,7 +39,7 @@ $err = isset($_GET['err']);
 
             <button type="submit">ログイン</button>
 
-            <a href="/nishijuku/index.html" class="back-btn">← 戻る</a>
+            <a href="/nishijuku/code/index/index.html" class="back-btn">← 戻る</a>
 
         </form>
 
