@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once '../db.php';
 
 /* ========= ログイン必須 ========= */
 if (!isset($_SESSION['user'])) {
@@ -50,5 +50,5 @@ $stmt->execute([
     $role_id
 ]);
 
-header("Location: home.php");
+header("Location: ../home/home.php");
 exit;

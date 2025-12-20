@@ -254,7 +254,7 @@ body {
 /* 集合写真 */
 .shugoImg {
     /* 写真変更 */
-    background-image: url("img/syugo.jpg");
+    background-image: url("../../img/syugo.jpg");
     background-size: cover; /* ← 画像を画面いっぱいに広げる */
     background-position: center; /* ← 画像の中央を基準に表示 */
     background-repeat: no-repeat;

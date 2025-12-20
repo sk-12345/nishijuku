@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once '../db.php';
 
 if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+    header("Location: ../login/login.php");
     exit();
 }
 ?>
@@ -30,7 +30,7 @@ if (!isset($_SESSION['user'])) {
             <button type="submit">変更する</button>
         </form>
 
-        <a href="home.php" class="password-back-btn">← ホームへ戻る</a>
+        <a href="../home/home.php" class="password-back-btn">← ホームへ戻る</a>
     </div>
 </div>
 

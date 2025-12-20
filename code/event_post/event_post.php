@@ -1,35 +1,54 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once '../db.php';
 
-// ✅ ログイン必須
+// =========================
+// ログイン必須
+// =========================
 if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+    header("Location: ../login/login.php");
     exit();
 }
 
-$role = $_SESSION['user']['role'];
+$role    = $_SESSION['user']['role'];
 $user_id = $_SESSION['user']['id'];
 
 // =========================
-// ✅ 削除処理（※ 全ログインユーザーOK）
+// パス定義（超重要）
+// =========================
+
+// 物理パス（保存・削除用）
+$UPLOAD_DIR_REAL = __DIR__ . '/../../img/uploads/';
+
+// URLパス（表示用：絶対パス）
+$UPLOAD_DIR_URL  = '/nishijuku/img/uploads/';
+
+// フォルダがなければ作成
+if (!is_dir($UPLOAD_DIR_REAL)) {
+    mkdir($UPLOAD_DIR_REAL, 0777, true);
+}
+
+// =========================
+// 削除処理（全ログインユーザーOK）
 // =========================
 if (isset($_POST['delete_id'])) {
 
-    $delete_id = $_POST['delete_id'];
+    $delete_id = (int)$_POST['delete_id'];
 
-    // 画像パス取得
     $stmt = $pdo->prepare("SELECT image_path FROM events WHERE id = ?");
     $stmt->execute([$delete_id]);
     $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($event) {
-        // ✅ 画像削除
-        if (file_exists($event['image_path'])) {
-            unlink($event['image_path']);
+
+        // image_path には「ファイル名」or 相対パスが入っていてもOK
+        $filename = basename($event['image_path']);
+        $realPath = $UPLOAD_DIR_REAL . $filename;
+
+        if (file_exists($realPath)) {
+            unlink($realPath);
         }
 
-        // ✅ DB削除
         $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
         $stmt->execute([$delete_id]);
     }
@@ -39,43 +58,55 @@ if (isset($_POST['delete_id'])) {
 }
 
 // =========================
-// ✅ 追加処理（※ ADMIN / SYSTEM のみ）
+// 追加処理（ADMIN / SYSTEM のみ）
 // =========================
 if (isset($_POST['title'])) {
 
-    // ✅ 権限チェック
     if ($role !== 'SYSTEM' && $role !== 'ADMIN') {
         exit('投稿権限がありません');
     }
 
-    $title = $_POST['title'];
+    $title       = $_POST['title'];
     $description = $_POST['description'];
 
-    $upload_dir = 'uploads/';
-    if (!is_dir($upload_dir)) {
-        mkdir($upload_dir, 0777, true);
+    if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+        exit('画像が選択されていません');
     }
 
-    $image_name = uniqid() . '_' . basename($_FILES['image']['name']);
-    $image_path = $upload_dir . $image_name;
+    // 拡張子取得
+    $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+    if ($ext === '') $ext = 'jpg';
 
-    if (move_uploaded_file($_FILES['image']['tmp_name'], $image_path)) {
+    // ファイル名生成
+    $filename = uniqid('event_', true) . '.' . $ext;
 
-        $stmt = $pdo->prepare(
-            "INSERT INTO events (title, description, image_path, created_by)
-             VALUES (?, ?, ?, ?)"
-        );
-        $stmt->execute([$title, $description, $image_path, $user_id]);
+    // 保存先
+    $realPath = $UPLOAD_DIR_REAL . $filename;
+
+    if (move_uploaded_file($_FILES['image']['tmp_name'], $realPath)) {
+
+        // DBには「ファイル名だけ」保存（←事故らない）
+        $stmt = $pdo->prepare("
+            INSERT INTO events (title, description, image_path, created_by)
+            VALUES (?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            $title,
+            $description,
+            $filename,
+            $user_id
+        ]);
 
         header("Location: event_post.php");
         exit;
+
     } else {
         echo "画像アップロード失敗";
     }
 }
 
 // =========================
-// ✅ 一覧取得
+// 一覧取得
 // =========================
 $stmt = $pdo->query("SELECT * FROM events ORDER BY created_at DESC");
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -86,9 +117,7 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <title>イベント管理</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- ✅ デザイン用CSS -->
-    <link rel="stylesheet" href="event_post_process.css">
+    <link rel="stylesheet" href="event_post.css">
 </head>
 <body>
 
@@ -96,7 +125,7 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <h2 class="page-title">イベント管理（ログイン必須）</h2>
 
-    <!-- ✅ 追加フォーム（ADMIN / SYSTEM のみ表示） -->
+    <!-- 投稿フォーム -->
     <?php if ($role === 'SYSTEM' || $role === 'ADMIN'): ?>
         <div class="form-box">
             <form method="POST" enctype="multipart/form-data">
@@ -124,15 +153,18 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 <h3><?= htmlspecialchars($event['title']) ?></h3>
 
-                <img src="<?= htmlspecialchars($event['image_path']) ?>">
+                <!-- ✅ 絶対パスで表示（ここが一番重要） -->
+                <img
+                    src="<?= $UPLOAD_DIR_URL . htmlspecialchars($event['image_path']) ?>"
+                    alt="イベント画像"
+                >
 
                 <p><?= nl2br(htmlspecialchars($event['description'])) ?></p>
 
-                <small>投稿日：<?= $event['created_at'] ?></small>
+                <small>投稿日：<?= htmlspecialchars($event['created_at']) ?></small>
 
-                <!-- ✅ 削除ボタン（全ログインユーザーOK） -->
                 <form method="POST" onsubmit="return confirm('削除しますか？');">
-                    <input type="hidden" name="delete_id" value="<?= $event['id'] ?>">
+                    <input type="hidden" name="delete_id" value="<?= (int)$event['id'] ?>">
                     <button type="submit" class="delete-btn">削除</button>
                 </form>
 
@@ -141,8 +173,8 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <div class="back-links">
-        <a href="home.php">ホームに戻る</a>
-        <a href="event.php">一般公開ページへ</a>
+        <a href="../home/home.php">ホームに戻る</a>
+        <a href="../event/event.php">一般公開ページへ</a>
     </div>
 
 </div>

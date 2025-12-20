@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once '../db.php';
 
 // ログイン必須
 if (!isset($_SESSION['user']['id'])) {
-    header("Location: login.php");
+    header("Location: ../login/login.php");
     exit;
 }
 
@@ -46,4 +46,4 @@ $stmt = $pdo->prepare("UPDATE users SET password_hash = ?, updated_at = NOW() WH
 $stmt->execute([$new_hash, $user_id]);
 
 echo "パスワード変更完了<br>";
-echo '<a href="home.php">戻る</a>';
+echo '<a href="../home/home.php">戻る</a>';

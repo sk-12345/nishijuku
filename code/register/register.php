@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once '../db.php';
 
 /* ========= ログイン必須 ========= */
 if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+    header("Location: ../login/login.php");
     exit;
 }
 
@@ -66,7 +66,7 @@ if ($role !== 'SYSTEM' && $role !== 'ADMIN') {
 
 </form>
 
-<a href="home.php">← ホームへ戻る</a>
+<a href="../home/home.php">← ホームへ戻る</a>
 
 </div>
 </div>
