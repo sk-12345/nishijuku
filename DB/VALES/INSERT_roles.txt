@@ -4,7 +4,7 @@ USE nishijuku;
 DELETE FROM roles;
 
 INSERT INTO roles (id, role_name, description) VALUES
-(1, 'SYSTEM',  'システム管理者'),
-(2, 'ADMIN',   '管理者'),
-(3, 'PHOTO',   '写真ユーザー'),
-(4, 'GENERAL', '一般ユーザー');
+(1, 'システム管理者',  'システム管理者'),
+(2, '管理者',   '管理者'),
+(3, '写真',   '写真ユーザー'),
+(4, '一般', '一般ユーザー');

@@ -6,11 +6,14 @@ if (!isset($_SESSION['user'])) {
     header("Location: ../login/login.php");
     exit();
 }
+
+// ここは画面だけ。処理は password_change_process.php 側でやる想定。
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>パスワード変更</title>
     <link rel="stylesheet" href="password.css">
 </head>
@@ -25,7 +28,10 @@ if (!isset($_SESSION['user'])) {
             <input type="password" name="current_password" required>
 
             <label>新しいパスワード</label>
-            <input type="password" name="new_password" required>
+            <input type="password" name="new_password" required minlength="6">
+
+            <label>新しいパスワード（確認）</label>
+            <input type="password" name="new_password_confirm" required minlength="6">
 
             <button type="submit">変更する</button>
         </form>
