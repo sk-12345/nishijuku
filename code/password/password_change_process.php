@@ -9,16 +9,17 @@ if (!isset($_SESSION['user']['id'])) {
 }
 
 $user_id = (int)$_SESSION['user']['id'];
+
 $current = $_POST['current_password'] ?? '';
 $new     = $_POST['new_password'] ?? '';
-$new2    = $_POST['new_password_confirm'] ?? ''; // 確認用がある場合
+$new2    = $_POST['new_password_confirm'] ?? ''; // フォームに確認欄がある時だけ使う
 
 // 空チェック
 if ($current === '' || $new === '') {
     exit('入力が不足しています');
 }
 
-// 確認用があるなら一致チェック（フォームに無いならこのifは消してOK）
+// 確認欄がフォームにある場合だけ一致チェック（確認欄が無いならこのifはそのままでOK）
 if ($new2 !== '' && $new !== $new2) {
     exit('新しいパスワードが一致しません');
 }
@@ -32,14 +33,14 @@ if (!$user) {
     exit('ユーザーが見つかりません');
 }
 
-// ✅ ここが重要：現在パスワード照合
+// 現在パスワード照合
 if (!password_verify($current, $user['password_hash'])) {
     echo "現在のパスワードが間違っています<br>";
     echo '<a href="password_change.php">戻る</a>';
     exit;
 }
 
-// ✅ 新パスをハッシュ化して保存
+// 新パスをハッシュ化して保存
 $new_hash = password_hash($new, PASSWORD_DEFAULT);
 
 $stmt = $pdo->prepare("UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?");

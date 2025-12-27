@@ -6,31 +6,26 @@ if (!isset($_SESSION['user'])) {
     exit('不正アクセス');
 }
 
-$myId   = $_SESSION['user']['id'];
-$myRole = $_SESSION['user']['role']; // SYSTEM / ADMIN / GENERAL / PHOTO
+$myId   = (int)$_SESSION['user']['id'];
+$myRole = (int)$_SESSION['user']['role_id']; // 1=SYSTEM, 2=ADMIN, 3=PHOTO, 4=GENERAL
 
 if (!isset($_POST['user_id'])) {
     exit('削除対象がありません');
 }
 
-$targetId = $_POST['user_id'];
+$targetId = (int)$_POST['user_id'];
 
 /* =========================
    ✅ ① 自分自身は削除不可
 ========================= */
-if ($myId == $targetId) {
+if ($myId === $targetId) {
     exit('自分自身のアカウントは削除できません');
 }
 
 /* =========================
-   ✅ ② 削除対象の権限取得
+   ✅ ② 削除対象の role_id（数値）取得
 ========================= */
-$stmt = $pdo->prepare("
-    SELECT r.role_name
-    FROM users u
-    JOIN roles r ON u.role_id = r.id
-    WHERE u.id = ?
-");
+$stmt = $pdo->prepare("SELECT role_id FROM users WHERE id = ?");
 $stmt->execute([$targetId]);
 $target = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -38,12 +33,12 @@ if (!$target) {
     exit('対象ユーザーが存在しません');
 }
 
-$targetRole = $target['role_name'];
+$targetRoleId = (int)$target['role_id'];
 
 /* =========================
-   ✅ ③ SYSTEMアカウントは誰も削除不可
+   ✅ ③ SYSTEM(1) は誰も削除不可
 ========================= */
-if ($targetRole === 'SYSTEM') {
+if ($targetRoleId === 1) {
     exit('SYSTEMアカウントは削除できません');
 }
 
@@ -52,13 +47,13 @@ if ($targetRole === 'SYSTEM') {
 ========================= */
 $canDelete = false;
 
-// SYSTEM → ADMIN / GENERAL / PHOTO 削除可
-if ($myRole === 'SYSTEM') {
+// SYSTEM(1) → SYSTEM以外は削除可（③でSYSTEMは弾いてるからここはtrueでOK）
+if ($myRole === 1) {
     $canDelete = true;
 }
 
-// ADMIN → GENERAL / PHOTO のみ削除可
-if ($myRole === 'ADMIN' && ($targetRole === 'GENERAL' || $targetRole === 'PHOTO')) {
+// ADMIN(2) → GENERAL(4) / PHOTO(3) のみ削除可
+if ($myRole === 2 && ($targetRoleId === 4 || $targetRoleId === 3)) {
     $canDelete = true;
 }
 

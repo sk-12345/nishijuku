@@ -10,8 +10,9 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
-$role    = $_SESSION['user']['role'];
-$user_id = $_SESSION['user']['id'];
+// ✅ role_id で管理（数字で統一）
+$role_id = (int)($_SESSION['user']['role_id'] ?? 0);
+$user_id = (int)($_SESSION['user']['id'] ?? 0);
 
 // =========================
 // パス定義（超重要）
@@ -29,19 +30,24 @@ if (!is_dir($UPLOAD_DIR_REAL)) {
 }
 
 // =========================
-// 削除処理（全ログインユーザーOK）
+// 削除処理（GENERAL=4 以外のみ）
 // =========================
 if (isset($_POST['delete_id'])) {
 
+    // ✅ 一般ユーザー(4)は削除不可
+    if ($role_id === 4) {
+        exit('削除する権限がありません');
+    }
+
     $delete_id = (int)$_POST['delete_id'];
 
+    // 画像ファイル取得
     $stmt = $pdo->prepare("SELECT image_path FROM events WHERE id = ?");
     $stmt->execute([$delete_id]);
     $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($event) {
-
-        // image_path には「ファイル名」or 相対パスが入っていてもOK
+        // image_path は「ファイル名」が入ってる想定
         $filename = basename($event['image_path']);
         $realPath = $UPLOAD_DIR_REAL . $filename;
 
@@ -49,6 +55,7 @@ if (isset($_POST['delete_id'])) {
             unlink($realPath);
         }
 
+        // DB削除
         $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
         $stmt->execute([$delete_id]);
     }
@@ -58,24 +65,32 @@ if (isset($_POST['delete_id'])) {
 }
 
 // =========================
-// 追加処理（ADMIN / SYSTEM のみ）
+// 追加処理（SYSTEM=1 / ADMIN=2 のみ）
 // =========================
 if (isset($_POST['title'])) {
 
-    if ($role !== 'SYSTEM' && $role !== 'ADMIN') {
+    // ✅ SYSTEM(1) / ADMIN(2) 以外は投稿不可
+    if (!in_array($role_id, [1, 2], true)) {
         exit('投稿権限がありません');
     }
 
-    $title       = $_POST['title'];
-    $description = $_POST['description'];
+    $title       = trim($_POST['title'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+
+    if ($title === '' || $description === '') {
+        exit('タイトルと説明は必須です');
+    }
 
     if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
         exit('画像が選択されていません');
     }
 
-    // 拡張子取得
+    // 拡張子チェック（最低限）
     $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-    if ($ext === '') $ext = 'jpg';
+    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    if (!in_array($ext, $allowed, true)) {
+        exit('画像形式は jpg/jpeg/png/gif/webp のみ対応です');
+    }
 
     // ファイル名生成
     $filename = uniqid('event_', true) . '.' . $ext;
@@ -85,7 +100,7 @@ if (isset($_POST['title'])) {
 
     if (move_uploaded_file($_FILES['image']['tmp_name'], $realPath)) {
 
-        // DBには「ファイル名だけ」保存（←事故らない）
+        // DBには「ファイル名だけ」保存
         $stmt = $pdo->prepare("
             INSERT INTO events (title, description, image_path, created_by)
             VALUES (?, ?, ?, ?)
@@ -101,7 +116,7 @@ if (isset($_POST['title'])) {
         exit;
 
     } else {
-        echo "画像アップロード失敗";
+        exit("画像アップロード失敗");
     }
 }
 
@@ -125,8 +140,8 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <h2 class="page-title">イベント管理（ログイン必須）</h2>
 
-    <!-- 投稿フォーム -->
-    <?php if ($role === 'SYSTEM' || $role === 'ADMIN'): ?>
+    <!-- 投稿フォーム（SYSTEM=1 / ADMIN=2 のみ） -->
+    <?php if (in_array($role_id, [1, 2], true)): ?>
         <div class="form-box">
             <form method="POST" enctype="multipart/form-data">
 
@@ -153,7 +168,6 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 <h3><?= htmlspecialchars($event['title']) ?></h3>
 
-                <!-- ✅ 絶対パスで表示（ここが一番重要） -->
                 <img
                     src="<?= $UPLOAD_DIR_URL . htmlspecialchars($event['image_path']) ?>"
                     alt="イベント画像"
@@ -163,10 +177,13 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 <small>投稿日：<?= htmlspecialchars($event['created_at']) ?></small>
 
-                <form method="POST" onsubmit="return confirm('削除しますか？');">
-                    <input type="hidden" name="delete_id" value="<?= (int)$event['id'] ?>">
-                    <button type="submit" class="delete-btn">削除</button>
-                </form>
+                <!-- 削除ボタン（GENERAL=4 以外のみ表示） -->
+                <?php if ($role_id !== 4): ?>
+                    <form method="POST" onsubmit="return confirm('削除しますか？');">
+                        <input type="hidden" name="delete_id" value="<?= (int)$event['id'] ?>">
+                        <button type="submit" class="delete-btn">削除</button>
+                    </form>
+                <?php endif; ?>
 
             </div>
         <?php endforeach; ?>

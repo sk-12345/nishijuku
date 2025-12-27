@@ -8,13 +8,10 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 
-/* ========= 権限チェック =========
-   セッションには role_name を入れている前提
-   （SYSTEM / ADMIN / GENERAL / PHOTO）
-*/
-$role = strtoupper($_SESSION['user']['role'] ?? '');
+$myRoleId = (int)($_SESSION['user']['role_id'] ?? 0);
 
-if ($role !== 'SYSTEM' && $role !== 'ADMIN') {
+/* ========= 権限チェック ========= */
+if (!in_array($myRoleId, [1, 2], true)) {
     exit('このページにアクセスする権限がありません');
 }
 ?>
@@ -47,15 +44,14 @@ if ($role !== 'SYSTEM' && $role !== 'ADMIN') {
     <label>権限</label>
     <select name="role_id" required>
 
-        <?php if ($role === 'SYSTEM'): ?>
-            <!-- SYSTEM は全権限作成可能 -->
-            <option value="1">SYSTEM</option>
+        <?php if ($myRoleId === 1): ?>
+            <!-- SYSTEM は ADMIN / PHOTO / GENERAL 作成可能（SYSTEMは事故防止で作らせない） -->
             <option value="2">ADMIN</option>
             <option value="3">PHOTO</option>
             <option value="4">GENERAL</option>
 
-        <?php elseif ($role === 'ADMIN'): ?>
-            <!-- ADMIN は一般・写真のみ -->
+        <?php elseif ($myRoleId === 2): ?>
+            <!-- ADMIN は PHOTO / GENERAL のみ -->
             <option value="3">PHOTO</option>
             <option value="4">GENERAL</option>
         <?php endif; ?>
