@@ -70,7 +70,7 @@ if (isset($_POST['delete_id'])) {
 if (isset($_POST['title'])) {
 
     // ✅ SYSTEM(1) / ADMIN(2) 以外は投稿不可
-    if (!in_array($role_id, [1, 2], true)) {
+    if (!in_array($role_id, [1, 2, 3], true)) {
         exit('投稿権限がありません');
     }
 
@@ -141,7 +141,7 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <h2 class="page-title">イベント管理（ログイン必須）</h2>
 
     <!-- 投稿フォーム（SYSTEM=1 / ADMIN=2 のみ） -->
-    <?php if (in_array($role_id, [1, 2], true)): ?>
+    <?php if (in_array($role_id, [1, 2, 3], true)): ?>
         <div class="form-box">
             <form method="POST" enctype="multipart/form-data">
 
