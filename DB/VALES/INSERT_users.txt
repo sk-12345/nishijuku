@@ -7,18 +7,18 @@ DELETE FROM users;
 INSERT INTO users
 (id, login_id, password_hash, name, role_id, created_at, updated_at)
 VALUES
-(1, 'sys',
-'$2y$10$hUeHyFmt3TGNmERv3DunjuAXctKKsR9LBt7c4yJyeE/LrTH5nz..2',
+(1, 'システム',
+'$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS',
 'システムユーザー', 1, NOW(), NOW()),
 
-(2, 'admin',
-'$2y$10$Fs2aDGVtqRQlKij619xSNeS6XebuzYmrIU1QkDKE25SUnLeysKfca',
+(2, '管理者',
+'$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS',
 '管理者ユーザー', 2, NOW(), NOW()),
 
-(3, 'general',
-'$2y$10$TJFneBhtHIcAKY5Jz0nUq...kOUYAaTbe.RM1s8NOLEOO5z6HcLxW',
-'一般ユーザー', 4, NOW(), NOW()),
+(3, '写真',
+'$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS',
+'写真ユーザー', 3, NOW(), NOW()),
 
-(4, 'photo',
-'$2y$10$29T7q3bpFi3glpJ8wV1UKezMjOFrTmznLbHyItjcNC6vy2rT/gL6u',
-'写真ユーザー', 3, NOW(), NOW());
+(4, '一般',
+'$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS',
+'一般ユーザー', 4, NOW(), NOW());
