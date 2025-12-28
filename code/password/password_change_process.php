@@ -2,49 +2,53 @@
 session_start();
 require_once '../db.php';
 
-// ログイン必須
-if (!isset($_SESSION['user']['id'])) {
+if (!isset($_SESSION['user'])) {
     header("Location: ../login/login.php");
-    exit;
+    exit();
 }
 
-$user_id = (int)$_SESSION['user']['id'];
+$userId = (int)($_SESSION['user']['id'] ?? 0);
+if ($userId <= 0) {
+    header("Location: password.html?err=failed");
+    exit();
+}
 
 $current = $_POST['current_password'] ?? '';
 $new     = $_POST['new_password'] ?? '';
-$new2    = $_POST['new_password_confirm'] ?? ''; // フォームに確認欄がある時だけ使う
+$confirm = $_POST['new_password_confirm'] ?? '';
 
-// 空チェック
-if ($current === '' || $new === '') {
-    exit('入力が不足しています');
+if (strlen($new) < 6) {
+    header("Location: password.html?err=short");
+    exit();
 }
 
-// 確認欄がフォームにある場合だけ一致チェック（確認欄が無いならこのifはそのままでOK）
-if ($new2 !== '' && $new !== $new2) {
-    exit('新しいパスワードが一致しません');
+if ($new !== $confirm) {
+    header("Location: password.html?err=mismatch");
+    exit();
 }
 
 // 現在のハッシュ取得
 $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = ?");
-$stmt->execute([$user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt->execute([$userId]);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user) {
-    exit('ユーザーが見つかりません');
+if (!$row || !password_verify($current, $row['password_hash'])) {
+    header("Location: password.html?err=current");
+    exit();
 }
 
-// 現在パスワード照合
-if (!password_verify($current, $user['password_hash'])) {
-    echo "現在のパスワードが間違っています<br>";
-    echo '<a href="password_change.php">戻る</a>';
-    exit;
+// 更新（ハッシュ化）
+$newHash = password_hash($new, PASSWORD_DEFAULT);
+
+$upd = $pdo->prepare("UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?");
+$ok = $upd->execute([$newHash, $userId]);
+
+if ($ok) {
+    // セッション固定対策：念のため更新後にID再生成もOK
+    session_regenerate_id(true);
+    header("Location: password.html?ok=1");
+    exit();
 }
 
-// 新パスをハッシュ化して保存
-$new_hash = password_hash($new, PASSWORD_DEFAULT);
-
-$stmt = $pdo->prepare("UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?");
-$stmt->execute([$new_hash, $user_id]);
-
-echo "パスワード変更完了<br>";
-echo '<a href="../home/home.php">戻る</a>';
+header("Location: password.html?err=failed");
+exit();
