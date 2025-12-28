@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>アカウント管理</title>
+    <link rel="stylesheet" href="account.css" />
+</head>
+<body>
+
+    <div class="account-wrapper">
+        <h2>アカウント管理</h2>
+
+        <table class="account-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>ログインID</th>
+                    <th>名前</th>
+                    <th>権限</th>
+                    <th>権限変更</th>
+                    <th>削除</th>
+                </tr>
+            </thead>
+
+            <tbody id="accountTbody">
+                <tr>
+                    <td colspan="6">読み込み中...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="back"><a href="../home/home.html">← ホームに戻る</a></p>
+    </div>
+
+    <script src="account.js"></script>
+</body>
+</html>
