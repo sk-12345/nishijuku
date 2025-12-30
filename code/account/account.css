@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 * {
     box-sizing: border-box;
     font-family: "メイリオ", sans-serif;
@@ -27,6 +29,11 @@ h2 {
     color: #0a3d62;
 }
 
+.table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
 .account-table {
     width: 100%;
     border-collapse: collapse;
@@ -43,6 +50,15 @@ h2 {
         background: #f4f6f8;
     }
 
+.role-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #0a3d62;
+    color: #fff;
+    cursor: pointer;
+}
+
 .delete-btn {
     padding: 6px 12px;
     background: #c0392b;
@@ -50,12 +66,7 @@ h2 {
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
 }
-
-    .delete-btn:hover {
-        opacity: 0.9;
-    }
 
 .back {
     text-align: center;
@@ -67,3 +78,74 @@ h2 {
         color: #0a3d62;
         font-weight: bold;
     }
+
+/* =========================
+   スマホ対応（カード表示）
+========================= */
+@media (max-width: 600px) {
+
+    body {
+        padding: 16px 0;
+    }
+
+    .account-wrapper {
+        width: 94vw;
+        padding: 16px;
+    }
+
+    .account-table thead {
+        display: none;
+    }
+
+    .table-wrap {
+        overflow-x: visible;
+    }
+
+    .account-table {
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+
+        .account-table tbody tr {
+            display: block;
+            background: #fff;
+            border: 1px solid #e6e6e6;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+        }
+
+        .account-table tbody td {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #e9e9e9;
+            text-align: left;
+            font-size: 14px;
+        }
+
+            .account-table tbody td:last-child {
+                border-bottom: none;
+            }
+
+            .account-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: #0a3d62;
+            }
+
+        .account-table form {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+    .role-btn,
+    .delete-btn {
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+}
