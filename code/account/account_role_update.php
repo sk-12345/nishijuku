@@ -49,5 +49,5 @@ if ($myRole === 1) {
 $upd = $pdo->prepare("UPDATE users SET role_id = ? WHERE id = ?");
 $upd->execute([$newRoleId, $userId]);
 
-header("Location: account_list.php");
+header("Location: account.html");
 exit();
