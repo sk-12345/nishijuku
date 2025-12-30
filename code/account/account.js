@@ -32,40 +32,40 @@ function render(data) {
 
     tbody.innerHTML = users.map(u => {
         const id = Number(u.id);
-        const canChange = !!u.can_change;
-        const canDelete = !!u.can_delete;
 
-        const changeCell = canChange
+        const changeCell = u.can_change
             ? `
-        <form method="POST" action="account_role_update.php" onsubmit="return confirm('権限を変更しますか？');">
-          <input type="hidden" name="user_id" value="${escapeHtml(id)}">
-          <select name="role_id" required>
-            ${buildRoleOptions(roles, selectableIds, u.role_id)}
-          </select>
-          <button class="role-btn" type="submit">更新</button>
-        </form>
-      `
-            : `—`;
+            <form method="POST" action="account_role_update.php"
+                  onsubmit="return confirm('権限を変更しますか？');">
+                <input type="hidden" name="user_id" value="${escapeHtml(id)}">
+                <select name="role_id" required>
+                    ${buildRoleOptions(roles, selectableIds, u.role_id)}
+                </select>
+                <button class="role-btn" type="submit">更新</button>
+            </form>
+            `
+            : "—";
 
-        const deleteCell = canDelete
+        const deleteCell = u.can_delete
             ? `
-        <form method="POST" action="account_delete.php" onsubmit="return confirm('このアカウントを削除しますか？');">
-          <input type="hidden" name="user_id" value="${escapeHtml(id)}">
-          <button class="delete-btn" type="submit">削除</button>
-        </form>
-      `
-            : `—`;
+            <form method="POST" action="account_delete.php"
+                  onsubmit="return confirm('このアカウントを削除しますか？');">
+                <input type="hidden" name="user_id" value="${escapeHtml(id)}">
+                <button class="delete-btn" type="submit">削除</button>
+            </form>
+            `
+            : "—";
 
         return `
-      <tr>
-        <td>${escapeHtml(u.id)}</td>
-        <td>${escapeHtml(u.login_id)}</td>
-        <td>${escapeHtml(u.name)}</td>
-        <td>${escapeHtml(u.role_name)}</td>
-        <td>${changeCell}</td>
-        <td>${deleteCell}</td>
-      </tr>
-    `;
+        <tr>
+            <td data-label="ID">${escapeHtml(u.id)}</td>
+            <td data-label="ログインID">${escapeHtml(u.login_id)}</td>
+            <td data-label="名前">${escapeHtml(u.name)}</td>
+            <td data-label="権限">${escapeHtml(u.role_name)}</td>
+            <td data-label="権限変更">${changeCell}</td>
+            <td data-label="削除">${deleteCell}</td>
+        </tr>
+        `;
     }).join("");
 }
 
