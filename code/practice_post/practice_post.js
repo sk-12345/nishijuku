@@ -14,35 +14,40 @@ function escapeHtml(str) {
         .replaceAll("'", "&#039;");
 }
 
-function renderpractices(practices, canDelete) {
+function renderPractices(practices, canDelete) {
     if (!practices || practices.length === 0) {
         grid.innerHTML = `<p class="no-practice">イベントがありません。</p>`;
         return;
     }
 
-    grid.innerHTML = practices.map(e => {
-        const delForm = canDelete ? `
-      <form data-delete-form data-id="${escapeHtml(e.id)}">
-        <button type="submit" class="delete-btn">削除</button>
-      </form>
-    ` : ``;
+    grid.innerHTML = practices
+        .map((e) => {
+            const delForm = canDelete
+                ? `
+          <form data-delete-form data-id="${escapeHtml(e.id)}">
+            <button type="submit" class="delete-btn">削除</button>
+          </form>
+        `
+                : ``;
 
-        return `
-      <div class="practice-card">
-        <h3>${escapeHtml(e.title)}</h3>
-        <img src="${escapeHtml(e.image_url)}" alt="イベント画像">
-        <p>${escapeHtml(e.description).replaceAll("\n", "<br>")}</p>
-        <small>投稿日：${escapeHtml(e.created_at)}</small>
-        ${delForm}
-      </div>
-    `;
-    }).join("");
+            return `
+        <div class="practice-card">
+          <h3>${escapeHtml(e.title)}</h3>
+          <img src="${escapeHtml(e.image_url)}" alt="イベント画像">
+          <p>${escapeHtml(e.description).replaceAll("\n", "<br>")}</p>
+          <small>投稿日：${escapeHtml(e.created_at ?? "")}</small>
+          ${delForm}
+        </div>
+      `;
+        })
+        .join("");
 
     // 削除イベント
     if (canDelete) {
-        document.querySelectorAll("[data-delete-form]").forEach(form => {
-            form.addpracticeListener("submit", async (ev) => {
-                ev.prpracticeDefault();
+        document.querySelectorAll("[data-delete-form]").forEach((form) => {
+            form.addEventListener("submit", async (ev) => {
+                ev.preventDefault();
+
                 const id = form.getAttribute("data-id");
                 if (!confirm("削除しますか？")) return;
 
@@ -79,12 +84,12 @@ async function load() {
         postArea.style.display = "none";
     }
 
-    renderpractices(data.practices, !!data.me?.can_delete);
+    renderPractices(data.practices, !!data.me?.can_delete);
 }
 
 // 投稿
-postForm?.addpracticeListener("submit", async (ev) => {
-    ev.prpracticeDefault();
+postForm?.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
     postMsg.textContent = "";
 
     const fd = new FormData(postForm);
@@ -92,9 +97,12 @@ postForm?.addpracticeListener("submit", async (ev) => {
 
     const res = await fetch(API_URL, { method: "POST", body: fd });
     if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
+        let err = {};
+        try {
+            err = await res.json();
+        } catch { }
         postMsg.textContent = "投稿に失敗しました";
-        console.error(err);
+        console.error("post error:", err);
         return;
     }
 

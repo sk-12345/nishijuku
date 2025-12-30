@@ -26,9 +26,9 @@ function closeModal() {
     modal.style.display = "none";
 }
 
-modal.addpracticeListener("click", closeModal);
-modal.querySelector(".modal-content").addpracticeListener("click", (e) => e.stopPropagation());
-modalClose.addpracticeListener("click", closeModal);
+modal.addEventListener("click", closeModal);
+modal.querySelector(".modal-content").addEventListener("click", (e) => e.stopPropagation());
+modalClose.addEventListener("click", closeModal);
 
 async function loadpractices() {
     try {
@@ -56,7 +56,7 @@ async function loadpractices() {
             const img = document.createElement("img");
             img.src = e.image_url ?? "";
             img.alt = "イベント画像";
-            img.addpracticeListener("click", () => openModal(e.image_url, e.title, e.description));
+            img.addEventListener("click", () => openModal(e.image_url, e.title, e.description));
 
             const p = document.createElement("p");
             p.innerHTML = "";

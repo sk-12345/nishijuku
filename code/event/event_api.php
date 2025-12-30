@@ -1,7 +1,9 @@
 <?php
+
 require_once '../db.php';
 
 header('Content-Type: application/json; charset=UTF-8');
+
 
 $UPLOAD_DIR_URL = '/nishijuku/img/uploads/';
 
