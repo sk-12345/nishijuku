@@ -49,5 +49,5 @@ VALUES (?, ?, ?, ?, NOW(), NOW())
 ");
 $stmt->execute([$login_id, $hash, $name, $role_id]);
 
-header("Location: ../home/home.php");
+header("Location: ../home/home.html");
 exit;

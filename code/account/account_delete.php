@@ -67,5 +67,5 @@ if (!$canDelete) {
 $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
 $stmt->execute([$targetId]);
 
-header("Location: account_list.php");
+header("Location: account.html");
 exit;
