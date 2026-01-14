@@ -120,8 +120,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $stmt = $pdo->prepare("
-            INSERT INTO practices (title, description, image_path, created_by)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO practices (title, description, image_path, created_by, created_at)
+            VALUES (?, ?, ?, ?, NOW())
         ");
         $stmt->execute([$title, $description, $filename, $user_id]);
 
@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // =========================
 // GET：一覧取得
 // =========================
-$stmt = $pdo->query("SELECT * FROM practices ORDER BY created_at DESC");
+$stmt = $pdo->query("SELECT * FROM practices ORDER BY id DESC");
 $practices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($practices as &$e) {
