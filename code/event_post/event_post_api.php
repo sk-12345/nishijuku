@@ -20,8 +20,8 @@ $user_id = (int)($_SESSION['user']['id'] ?? 0);
 // =========================
 // パス定義
 // =========================
-$UPLOAD_DIR_REAL = __DIR__ . '/../../img/uploads/';
-$UPLOAD_DIR_URL  = '/nishijuku/img/uploads/';
+$UPLOAD_DIR_REAL = __DIR__ . '/../../img/events/';
+$UPLOAD_DIR_URL  = '/nishijuku/img/events/';
 
 if (!is_dir($UPLOAD_DIR_REAL)) {
     mkdir($UPLOAD_DIR_REAL, 0777, true);
@@ -117,8 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $stmt = $pdo->prepare("
-            INSERT INTO events (title, description, image_path, created_by)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO events (title, description, image_path, created_by, created_at)
+            VALUES (?, ?, ?, ?, NOW())
         ");
         $stmt->execute([$title, $description, $filename, $user_id]);
 
@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // =========================
 // GET：一覧取得
 // =========================
-$stmt = $pdo->query("SELECT * FROM events ORDER BY created_at DESC");
+$stmt = $pdo->query("SELECT * FROM events ORDER BY id DESC");
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // 画像URL付与

@@ -5,7 +5,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 $UPLOAD_DIR_URL = '/nishijuku/img/practices/';
 
-$stmt = $pdo->query("SELECT * FROM practices ORDER BY created_at DESC");
+$stmt = $pdo->query("SELECT * FROM practices ORDER BY id DESC");
 $practices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // DBには「ファイル名のみ」が入っている前提でURL化
