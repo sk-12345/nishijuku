@@ -13,9 +13,10 @@ function escapeHtml(str) {
         .replaceAll("'", "&#039;");
 }
 
-function buildMenu(isAdminOrSystem) {
+function buildMenu({ isAdminOrSystem, isPhoto }) {
     const items = [];
 
+    // 管理者/システムだけ
     if (isAdminOrSystem) {
         items.push({ href: "../register/register.html", text: "新規アカウント作成" });
         items.push({ href: "../account/account.html", text: "アカウント管理" });
@@ -24,6 +25,12 @@ function buildMenu(isAdminOrSystem) {
     items.push({ href: "../practice_post/practice_post.html", text: "練習風景・投稿", extraClass: "main-card" });
     items.push({ href: "../event_post/event_post.html", text: "イベント一覧・投稿", extraClass: "main-card" });
     items.push({ href: "../password/password.html", text: "パスワード変更" });
+
+    // ✅ 写真ユーザーだけ表示
+    if (isPhoto) {
+        items.push({ href: "../transfer/transfer.html", text: "権限譲渡" });
+    }
+
     items.push({ href: "../logout.php", text: "ログアウト", extraClass: "logout-card" });
 
     menuArea.innerHTML = "";
@@ -35,7 +42,6 @@ function buildMenu(isAdminOrSystem) {
         menuArea.appendChild(a);
     });
 }
-
 
 async function loadHome() {
     const res = await fetch(API_URL, { cache: "no-store" });
@@ -54,12 +60,15 @@ async function loadHome() {
 
     const fullname = data.user?.fullname ?? "";
     const roleName = data.user?.role_name ?? "";
+
     const isAdminOrSystem = !!data.flags?.is_admin_or_system;
+
+    const isPhoto = !!data.flags?.isPphoto;
 
     welcomeTitle.innerHTML = `ようこそ、<br>${escapeHtml(fullname)} さん`;
     roleText.textContent = `権限：${roleName}`;
 
-    buildMenu(isAdminOrSystem);
+    buildMenu({ isAdminOrSystem, isPhoto });
 }
 
 loadHome();
