@@ -3,11 +3,17 @@ USE nishijuku;
 -- 既にあれば削除
 DROP TABLE IF EXISTS events;
 
-CREATE TABLE events (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  title VARCHAR(100),
-  description TEXT,
-  image_path VARCHAR(255),
-  created_by INT,
-  created_at DATETIME
-);
+create table nishijuku.`events` (
+  id int(11) auto_increment not null comment 'ID'
+  , title varchar(100) comment 'タイトル'
+  , description text comment '説明'
+  , image_path varchar(255) comment '写真パス'
+  , created_by int(11) comment '作成者'
+  , created_at datetime comment '投稿時間'
+  , primary key (id)
+)
+  comment='イベント写真'
+  engine InnoDB
+  row_format DYNAMIC
+  auto_increment 3
+  collate utf8mb4_general_ci

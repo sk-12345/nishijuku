@@ -1,50 +1,49 @@
-@echo off
-chcp 932 >nul
+﻿@echo off
+chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 REM ==========================================================
-REM  Nishijuku SQL Runner�i���̃t�H���_�\����p�j
+REM  Nishijuku SQL Runner
 REM
-REM  ���t�H���_�\���͂��̂܂�
-REM   DB\    �� DB�쐬�nSQL��u��
-REM   TABLE\ �� �e�[�u���쐬�nSQL��u��
-REM   VALES\ �� INSERT/UPDATE/DELETE�Ȃǃf�[�^�nSQL��u��
+REM   DB\       : DB作成などのSQL（.txt）
+REM   TABLE\    : テーブル作成などのSQL（.txt）
+REM   VALES\    : INSERT/UPDATE/DELETE などのSQL（.txt）
 REM
-REM  �����s������e�� run_memo.txt �Ŏw��
+REM   実行モードは run_memo.txt で指定
 REM ==========================================================
 
-REM =====================�y�ݒ�]�[���z�������� =====================
-REM mysql.exe �̏ꏊ
+REM ===================== 設定 =====================
+REM mysql.exe の場所
 set "MYSQL_EXE=C:\xampp\mysql\bin\mysql.exe"
 
-REM DB�ڑ����
+REM DB接続情報
 set "DB_HOST=localhost"
 set "DB_USER=root"
 set "DB_PASS="
 
-REM "C:\xampp\htdocs\nishijuku\DB\all.bat"
+REM このbatのある場所
 set "ROOT=%~dp0"
 
-REM "C:\xampp\htdocs\nishijuku\DB\all.bat"
+REM 実行指示ファイル
 set "MEMO_FILE=%ROOT%run_memo.txt"
-REM =================================================================
+REM =================================================
 
-REM ---- mysql.exe �`�F�b�N
+REM ---- mysql.exe の存在チェック
 if not exist "%MYSQL_EXE%" (
-  echo [ERROR] mysql.exe ��������܂���: %MYSQL_EXE%
+  echo [ERROR] mysql.exe が見つかりません: %MYSQL_EXE%
   pause
   exit /b 1
 )
 
-REM ---- �����t�@�C���`�F�b�N
+REM ---- run_memo.txt の存在チェック
 if not exist "%MEMO_FILE%" (
-  echo [ERROR] run_memo.txt ��������܂���: %MEMO_FILE%
+  echo [ERROR] run_memo.txt が見つかりません: %MEMO_FILE%
   pause
   exit /b 1
 )
 
 REM ==========================================================
-REM  run_memo.txt ���� MODE / ARG ��ǂݎ��
+REM  run_memo.txt から MODE / ARG を読み取り
 REM ==========================================================
 set "MODE="
 set "ARG="
@@ -59,7 +58,7 @@ echo ARG=%ARG%
 echo.
 
 REM ==========================================================
-REM  MODE �ʂɏ�������
+REM  MODE に応じて実行
 REM ==========================================================
 if /i "%MODE%"=="all" (
   call :RUN_FOLDER "DB"
@@ -90,25 +89,25 @@ if /i "%MODE%"=="pattern" (
   goto :END
 )
 
-echo [ERROR] MODE ���s���ł��iall/folder/file/pattern/path�j
+echo [ERROR] MODE が不正です（all/folder/file/pattern/path）
 pause
 exit /b 1
 
 
 REM ==========================================================
-REM  �t�H���_���� *.txt �𖼑O���őS�����s
+REM  フォルダ内の *.txt をファイル名順に全実行
 REM ==========================================================
 :RUN_FOLDER
 set "FOLDER=%~1"
 set "TARGET=%ROOT%%FOLDER%"
 
 if "%FOLDER%"=="" (
-  echo [ERROR] folder �w��Ȃ̂� ARG ����ł�
+  echo [ERROR] folder モードなのに ARG が空です
   exit /b 1
 )
 
 if not exist "%TARGET%" (
-  echo [ERROR] �t�H���_�����݂��܂���: %TARGET%
+  echo [ERROR] フォルダが見つかりません: %TARGET%
   exit /b 1
 )
 
@@ -124,14 +123,14 @@ for /f "delims=" %%F in ('dir /b /on "%TARGET%\*.txt" 2^>nul') do (
 )
 
 if "!FOUND!"=="0" (
-  echo [WARN] %FOLDER% �� .txt ��������܂���ł���
+  echo [WARN] %FOLDER% に .txt がありません
 )
 
 exit /b 0
 
 
 REM ==========================================================
-REM  ���C���h�J�[�h���s�i��: TABLE\*.txt�j
+REM  パターン指定で複数ファイル実行（例: TABLE\CREATE_*.txt）
 REM ==========================================================
 :RUN_PATTERN
 set "PATT=%~1"
@@ -148,43 +147,47 @@ for /f "delims=" %%F in ('dir /b /on "%PATT%" 2^>nul') do (
 )
 
 if "!FOUND!"=="0" (
-  echo [WARN] �p�^�[���Ɉ�v����t�@�C��������܂���
+  echo [WARN] パターンに一致するファイルがありません
 )
 
 exit /b 0
 
 
 REM ==========================================================
-REM  1�t�@�C�����s�imysql �ɗ������݁j
+REM  1ファイル実行（mysqlに流し込み）
 REM ==========================================================
 :RUN_FILE
 set "FILE=%~1"
 
 if not exist "%FILE%" (
-  echo [ERROR] �t�@�C�������݂��܂���: %FILE%
+  echo [ERROR] ファイルが見つかりません: %FILE%
   exit /b 1
 )
 
 echo [RUN ] %FILE%
 
+REM ここが文字化け対策の本丸：
+REM  - コンソールはUTF-8 (chcp 65001)
+REM  - mysqlにデフォルト文字コードを指定
+REM  - 可能ならSQLファイル自体もUTF-8で保存
 if "%DB_PASS%"=="" (
-  "%MYSQL_EXE%" -h "%DB_HOST%" -u "%DB_USER%" < "%FILE%"
+  "%MYSQL_EXE%" -h "%DB_HOST%" -u "%DB_USER%" --default-character-set=utf8mb4 < "%FILE%"
 ) else (
-  "%MYSQL_EXE%" -h "%DB_HOST%" -u "%DB_USER%" -p%DB_PASS% < "%FILE%"
+  "%MYSQL_EXE%" -h "%DB_HOST%" -u "%DB_USER%" -p%DB_PASS% --default-character-set=utf8mb4 < "%FILE%"
 )
 
 if errorlevel 1 (
-  echo [ERROR] SQL���s���s: %FILE%
+  echo [ERROR] SQL実行に失敗しました: %FILE%
   pause
   exit /b 1
 )
 
-echo [OK  ] ����
+echo [OK  ] 完了
 exit /b 0
 
 
 :END
 echo.
-echo [DONE] ���s����
+echo [DONE] 実行終了
 pause
 exit /b 0

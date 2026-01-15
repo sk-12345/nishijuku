@@ -1,0 +1,16 @@
+USE nishijuku;
+
+-- 既にあれば削除
+DROP TABLE IF EXISTS events;
+
+CREATE TABLE IF NOT EXISTS role_transfer_logs (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  from_user_id INT UNSIGNED NOT NULL,
+  to_user_id   INT UNSIGNED NOT NULL,
+  from_role_id INT UNSIGNED NOT NULL,
+  to_role_id   INT UNSIGNED NOT NULL,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_from (from_user_id),
+  KEY idx_to   (to_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

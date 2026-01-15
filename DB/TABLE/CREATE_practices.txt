@@ -4,11 +4,17 @@ USE nishijuku;
 DROP TABLE IF EXISTS practices;
 
 -- roles テーブル作成
-CREATE TABLE practices (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  title VARCHAR(100),
-  description TEXT,
-  image_path VARCHAR(255),
-  created_by INT,
-  created_at DATETIME
-);
+create table nishijuku.`practices` (
+  id int(11) auto_increment not null comment 'ID'
+  , title varchar(100) comment 'タイトル'
+  , description text comment '説明'
+  , image_path varchar(255) comment 'イメージパス'
+  , created_by int(11) comment '作成者'
+  , created_at datetime comment '投稿時間'
+  , primary key (id)
+)
+  comment='練習写真'
+  engine InnoDB
+  row_format DYNAMIC
+  auto_increment 1
+  collate utf8mb4_general_ci
