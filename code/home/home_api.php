@@ -27,10 +27,12 @@ function getRoleMap(PDO $pdo): array {
     return $map;
 }
 
-$roleMap  = getRoleMap($pdo);              // ★先に作る
+$roleMap  = getRoleMap($pdo);
 
 $roleName = $roleMap[$roleId] ?? '不明';
+
 $isAdminOrSystem = in_array($roleId, [1, 2], true);
+$isPhoto = ($roleId === 3); // ★ PHOTOが3の場合（違うなら数字を合わせて）
 
 echo json_encode([
     'user' => [
@@ -39,6 +41,7 @@ echo json_encode([
         'role_name' => $roleName
     ],
     'flags' => [
-        'is_admin_or_system' => $isAdminOrSystem
+        'is_admin_or_system' => $isAdminOrSystem,
+        'is_photo' => $isPhoto
     ]
 ], JSON_UNESCAPED_UNICODE);

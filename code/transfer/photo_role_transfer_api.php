@@ -4,106 +4,68 @@ declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../db.php';
 
-ini_set('display_errors', '0');
-error_reporting(E_ALL);
-
 header('Content-Type: application/json; charset=UTF-8');
 
-function jexit(array $data, int $code = 200): void {
-  http_response_code($code);
-  echo json_encode($data, JSON_UNESCAPED_UNICODE);
-  exit;
-}
-
-// ★role_id はあなたのDBに合わせて調整してOK
-const ROLE_SYSTEM  = 1;
-const ROLE_ADMIN   = 2;
-const ROLE_PHOTO   = 3;
-const ROLE_GENERAL = 4;
-
+// セッション確認
 if (!isset($_SESSION['user'])) {
-  jexit(['ok' => false, 'error' => 'unauthorized', 'message' => 'ログインしてください'], 401);
+    http_response_code(401);
+    echo json_encode(['error' => 'unauthorized'], JSON_UNESCAPED_UNICODE);
+    exit();
 }
 
-$me = $_SESSION['user'];
-$myId = (int)($me['id'] ?? 0);
-$myRoleId = (int)($me['role_id'] ?? 0);
+$myId   = (int)($_SESSION['user']['id'] ?? 0);
+$myRole = (int)($_SESSION['user']['role_id'] ?? 0); // 1=SYSTEM, 2=ADMIN, 3=PHOTO, 4=GENERAL
 
-if ($myId <= 0) {
-  jexit(['ok' => false, 'error' => 'invalid_session'], 401);
+// 写真ユーザーのみ権限移行できる
+if ($myRole !== 3) { // PHOTOのみ
+    http_response_code(403);
+    echo json_encode(['error' => 'forbidden'], JSON_UNESCAPED_UNICODE);
+    exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  jexit(['ok' => false, 'error' => 'method_not_allowed'], 405);
+$data = json_decode(file_get_contents('php://input'), true);
+
+$targetId  = (int)($data['userId'] ?? 0);
+$newRole   = (string)($data['newRole'] ?? '');
+
+if ($targetId <= 0 || $newRole === '') {
+    http_response_code(400);
+    echo json_encode(['error' => 'invalid_params'], JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
-// 写真ユーザーのみ
-if ($myRoleId !== ROLE_PHOTO) {
-  jexit(['ok' => false, 'error' => 'forbidden', 'message' => '写真ユーザーのみ譲渡できます'], 403);
+// 対象ユーザーを取得
+$st = $pdo->prepare("SELECT id, role_id FROM users WHERE id = ?");
+$st->execute([$targetId]);
+$target = $st->fetch(PDO::FETCH_ASSOC);
+
+if (!$target) {
+    http_response_code(404);
+    echo json_encode(['error' => 'user_not_found'], JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
-// CSRFチェック
-$token = (string)($_POST['csrf_token'] ?? '');
-if (!isset($_SESSION['csrf_token']) || !hash_equals((string)$_SESSION['csrf_token'], $token)) {
-  jexit(['ok' => false, 'error' => 'csrf', 'message' => '不正な操作です（CSRF）'], 400);
+// 権限変更が可能か確認（写真ユーザーのみ）
+if ($myId === $targetId || $target['role_id'] !== 4) {
+    http_response_code(403);
+    echo json_encode(['error' => 'cannot_change_this_user'], JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
-$toUserId = (int)($_POST['to_user_id'] ?? 0);
-if ($toUserId <= 0) {
-  jexit(['ok' => false, 'error' => 'bad_request', 'message' => '譲渡先が不正です'], 400);
+// 新しい役職を数値に変換
+$roleMap = ['USER' => 4, 'PHOTO' => 3];
+$newRoleId = $roleMap[$newRole] ?? 4; // 新しい役職ID（デフォルトは一般ユーザー）
+
+// 現在の役職を変更（写真ユーザーの場合、一般ユーザーに変更）
+$currentRoleId = $target['role_id'];
+if ($currentRoleId == 3) {
+    // 既存の写真ユーザーを一般ユーザーに変更
+    $stmt = $pdo->prepare("UPDATE users SET role_id = ? WHERE id = ?");
+    $stmt->execute([4, $myId]); // 元の写真ユーザーの役職を一般ユーザーに変更
 }
-if ($toUserId === $myId) {
-  jexit(['ok' => false, 'error' => 'bad_request', 'message' => '自分には譲渡できません'], 400);
-}
 
-try {
-  $pdo->beginTransaction();
+// 権限移行先の役職を変更（一般ユーザーを写真ユーザーに変更）
+$stmt = $pdo->prepare("UPDATE users SET role_id = ? WHERE id = ?");
+$stmt->execute([$newRoleId, $targetId]);
 
-  // 譲渡元をロックして最新状態確認
-  $stmt = $pdo->prepare("SELECT id, role_id FROM users WHERE id = ? FOR UPDATE");
-  $stmt->execute([$myId]);
-  $from = $stmt->fetch(PDO::FETCH_ASSOC);
-
-  if (!$from) {
-    $pdo->rollBack();
-    jexit(['ok' => false, 'error' => 'not_found', 'message' => '譲渡元が見つかりません'], 404);
-  }
-  if ((int)$from['role_id'] !== ROLE_PHOTO) {
-    $pdo->rollBack();
-    jexit(['ok' => false, 'error' => 'conflict', 'message' => 'あなたは既に写真ユーザーではありません'], 409);
-  }
-
-  // 譲渡先をロック
-  $stmt->execute([$toUserId]);
-  $to = $stmt->fetch(PDO::FETCH_ASSOC);
-
-  if (!$to) {
-    $pdo->rollBack();
-    jexit(['ok' => false, 'error' => 'not_found', 'message' => '譲渡先が見つかりません'], 404);
-  }
-
-  // 譲渡先は一般ユーザー限定（事故防止）
-  if ((int)$to['role_id'] !== ROLE_GENERAL) {
-    $pdo->rollBack();
-    jexit(['ok' => false, 'error' => 'conflict', 'message' => '譲渡先は一般ユーザーのみ指定できます'], 409);
-  }
-
-  // 入れ替え
-  $upd = $pdo->prepare("UPDATE users SET role_id = ? WHERE id = ?");
-  $upd->execute([ROLE_GENERAL, $myId]);
-  $upd->execute([ROLE_PHOTO,   $toUserId]);
-
-  $pdo->commit();
-
-  // 自分は一般ユーザーになったのでセッションも更新
-  $_SESSION['user']['role_id'] = ROLE_GENERAL;
-
-  // CSRFは使い捨てに近づける（任意）
-  unset($_SESSION['csrf_token']);
-
-  jexit(['ok' => true, 'message' => '写真権限を譲渡しました']);
-
-} catch (Throwable $e) {
-  if ($pdo->inTransaction()) $pdo->rollBack();
-  jexit(['ok' => false, 'error' => 'server_error', 'message' => '処理に失敗しました'], 500);
-}
+echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);

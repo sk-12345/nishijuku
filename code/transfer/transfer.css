@@ -1,4 +1,5 @@
-﻿* {
+﻿/* ベース設定 */
+* {
     box-sizing: border-box;
     font-family: "メイリオ", sans-serif;
 }
@@ -6,86 +7,44 @@
 body {
     margin: 0;
     background: linear-gradient(135deg, #0a3d62, #3c6382);
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 18px;
+    color: #111;
 }
 
+/* メインのラッパー */
 .wrap {
-    width: min(720px, 92vw);
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, .25);
-    padding: 18px;
+    width: min(980px, 92vw);
+    margin: 0 auto;
+    padding: 22px 0 60px;
+}
+
+/* ヘッダー */
+.hero {
+    text-align: center;
+    color: #fff;
+    margin-bottom: 20px;
 }
 
 .title {
+    margin: 6px 0 6px;
+    font-size: clamp(22px, 4.5vw, 34px);
+}
+
+.sub {
     margin: 0 0 10px;
-    font-size: clamp(18px, 4.5vw, 26px);
+    opacity: 0.95;
 }
 
-.note {
-    margin: 0 0 14px;
-    color: #555;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.form label {
-    display: block;
-    font-weight: bold;
-    margin: 10px 0 6px;
-}
-
-.form input {
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 12px;
-    font-size: 16px;
-}
-
-.btn {
-    width: 100%;
-    margin-top: 14px;
-    border: 0;
-    border-radius: 12px;
-    padding: 12px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-    .btn:disabled {
-        opacity: .6;
-        cursor: not-allowed;
-    }
-
-.danger {
-    background: #ff4d4f;
-    color: #fff;
-}
-
-.msg {
-    margin-top: 14px;
-    padding: 10px;
-    border-radius: 12px;
-    background: #f1f3f5;
-    display: none;
-    white-space: pre-wrap;
-}
-
-    .msg.show {
-        display: block;
-    }
-
+/* リンク */
 .links {
-    margin-top: 12px;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 10px 0 0;
 }
 
     .links a {
-        color: #0a3d62;
+        color: #fff;
         text-decoration: none;
         font-weight: bold;
     }
@@ -93,3 +52,123 @@ body {
         .links a:hover {
             text-decoration: underline;
         }
+
+/* メインのカード */
+.card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    padding: 16px;
+}
+
+/* メッセージ表示 */
+.msg {
+    display: none;
+    border-radius: 14px;
+    padding: 12px 12px;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+    .msg.err {
+        display: block;
+        background: #ffeaea;
+        border: 1px solid #ffb3b3;
+        color: #a40000;
+    }
+
+    .msg.ok {
+        display: block;
+        background: #eaffea;
+        border: 1px solid #b3ffb3;
+        color: #006400;
+    }
+
+/* ユーザー一覧テーブル */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 16px;
+}
+
+th {
+    background: #f7f7f7;
+    color: #0a3d62;
+    font-weight: bold;
+}
+
+td {
+    background: #fff;
+    color: #333;
+}
+
+/* 権限移行用セレクトボックス */
+select {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+button {
+    padding: 10px 14px;
+    background-color: #0a3d62;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+    button:hover {
+        background-color: #065c8e;
+    }
+
+    /* ボタンを無効にする */
+    button:disabled {
+        background-color: #aaa;
+        cursor: not-allowed;
+    }
+
+    /* ボタンの状態 */
+    button + button {
+        margin-left: 10px;
+    }
+
+/* フッター */
+.footer {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 30px;
+}
+
+    .footer small {
+        font-size: 14px;
+    }
+
+/* モバイル向け */
+@media (max-width: 720px) {
+    .card {
+        padding: 12px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 8px 10px;
+    }
+
+    select {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
