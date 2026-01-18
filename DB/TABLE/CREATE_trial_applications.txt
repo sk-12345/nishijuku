@@ -1,0 +1,22 @@
+USE nishijuku;
+
+-- 既にあれば削除
+DROP TABLE IF EXISTS trial_applications;
+
+CREATE TABLE nishijuku.`trial_applications` (
+  id int(11) auto_increment not null comment 'ID'
+  , name varchar(100) not null comment '氏名'
+  , phone varchar(30) not null comment '電話番号'
+  , email varchar(255) not null comment 'メールアドレス'
+  , age varchar(50) comment '学年・年齢'
+  , preferred_date varchar(50) comment '希望日'
+  , message text comment '備考'
+  , ip varchar(45) comment '送信元IP'
+  , user_agent varchar(255) comment 'ユーザーエージェント'
+  , created_at datetime not null default current_timestamp comment '作成日'
+  , primary key (id)
+)
+  comment='体験応募'
+  engine InnoDB
+  row_format DYNAMIC
+  collate utf8mb4_general_ci;

@@ -1,0 +1,51 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>体験応募一覧 | 西塾柔道クラブ</title>
+    <link rel="stylesheet" href="trial_admin.css" />
+</head>
+<body>
+    <div class="wrap">
+        <h1 class="title">体験応募一覧</h1>
+
+        <div class="links">
+            <a href="../home/home.html">ホーム</a>
+            <a href="../trial/index.html">体験応募フォーム</a>
+        </div>
+
+        <div class="toolbar">
+            <input id="q" type="search" placeholder="検索（氏名/電話/メール）" />
+            <button id="reloadBtn" class="btn">更新</button>
+        </div>
+
+        <div id="msg" class="msg" aria-live="polite"></div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>日時</th>
+                        <th>氏名</th>
+                        <th>電話</th>
+                        <th>メール</th>
+                        <th>学年/年齢</th>
+                        <th>希望日</th>
+                        <th>備考</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                    <!-- JSで埋める -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="empty" class="empty" style="display:none;">まだ応募はありません。</div>
+        <p class="small" style="text-align:center; margin-top:10px;">※ SYSTEM / ADMIN のみ閲覧・削除できます</p>
+    </div>
+
+    <script src="trial_admin.js"></script>
+</body>
+</html>
