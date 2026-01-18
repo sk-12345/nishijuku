@@ -1,81 +1,97 @@
-﻿const form = document.getElementById("transferForm");
-const msg = document.getElementById("msg");
-const csrfEl = document.getElementById("csrf_token");
+﻿const userTable = document.getElementById("userTable").getElementsByTagName('tbody')[0];
 const submitBtn = document.getElementById("submitBtn");
+const msgEl = document.getElementById("msg");
 
-function showMsg(text) {
-  msg.textContent = text;
-  msg.classList.add("show");
-}
+// ユーザー一覧を取得するAPI
+async function loadUsers() {
+    try {
+        const res = await fetch("../transfer/transfer_api.php");
+        const data = await res.json();
 
-async function loadCsrf() {
-  try {
-    const res = await fetch("csrf_token_api.php", { cache: "no-store" });
-    const data = await res.json();
+        if (!res.ok || !data.ok) {
+            showMsg(data.error || "ユーザー情報の取得に失敗しました。", "err");
+            return;
+        }
 
-    if (!data || !data.ok) {
-      showMsg("CSRFトークン取得に失敗しました。\nログイン状態か確認してください。");
-      submitBtn.disabled = true;
-      return;
+        const users = data.users || [];
+        renderUsers(users);
+
+    } catch (error) {
+        showMsg("ユーザー情報の取得に失敗しました。", "err");
     }
-    csrfEl.value = data.csrf_token;
-  } catch (e) {
-    showMsg("CSRFトークン取得で通信エラーが発生しました。");
-    submitBtn.disabled = true;
-  }
 }
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+// ユーザー情報をテーブルに表示
+function renderUsers(users) {
+    userTable.innerHTML = ""; // 既存の行を消す
 
-  const toUserId = Number(form.to_user_id.value || 0);
-  if (!toUserId) {
-    showMsg("譲渡先ユーザーIDを入力してください。");
-    return;
-  }
+    users.forEach(user => {
+        const row = document.createElement("tr");
 
-  if (!csrfEl.value) {
-    showMsg("CSRFトークンがありません。ページを更新してください。");
-    return;
-  }
+        // 氏名
+        const nameCell = document.createElement("td");
+        nameCell.textContent = user.fullname;
+        row.appendChild(nameCell);
 
-  const ok = confirm("本当に写真権限を譲渡しますか？\n（あなたは一般ユーザーになります）");
-  if (!ok) return;
+        // 現在の役職
+        const roleCell = document.createElement("td");
+        roleCell.textContent = user.role_name;
+        row.appendChild(roleCell);
 
-  submitBtn.disabled = true;
-  showMsg("処理中...");
+        // 移行先役職（選択肢）
+        const selectCell = document.createElement("td");
+        const select = document.createElement("select");
+        const options = ["PHOTO", "USER"];
+        options.forEach(option => {
+            const opt = document.createElement("option");
+            opt.value = option;
+            opt.textContent = option;
+            select.appendChild(opt);
+        });
+        selectCell.appendChild(select);
+        row.appendChild(selectCell);
 
-  try {
-    const fd = new FormData(form);
-    const res = await fetch("photo_role_transfer_api.php", {
-      method: "POST",
-      body: fd
+        // 移行ボタン
+        const actionCell = document.createElement("td");
+        const moveBtn = document.createElement("button");
+        moveBtn.className = "btn";
+        moveBtn.textContent = "権限移行";
+        moveBtn.addEventListener("click", () => moveRole(user.id, select.value));
+        actionCell.appendChild(moveBtn);
+        row.appendChild(actionCell);
+
+        userTable.appendChild(row);
     });
+}
 
-    const data = await res.json().catch(() => null);
+// 権限を移行する処理
+async function moveRole(userId, newRole) {
+    try {
+        const res = await fetch("../transfer/photo_role_transfer_api.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, newRole })
+        });
 
-    if (!data) {
-      showMsg("サーバー応答が不正です。");
-      submitBtn.disabled = false;
-      return;
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+            showMsg(data.error || "権限移行に失敗しました。", "err");
+            return;
+        }
+
+        showMsg("権限が正常に移行されました。", "ok");
+        loadUsers(); // 再読み込み
+    } catch (error) {
+        showMsg("権限移行中にエラーが発生しました。", "err");
     }
+}
 
-    if (data.ok) {
-      showMsg(data.message || "譲渡しました。");
-      setTimeout(() => {
-        location.href = "/nishijuku/home/home.php";
-      }, 900);
-    } else {
-      showMsg(data.message || data.error || "失敗しました。");
-      submitBtn.disabled = false;
+// メッセージ表示
+function showMsg(text, type) {
+    msgEl.className = "msg " + (type || "");
+    msgEl.textContent = text || "";
+    msgEl.style.display = text ? "block" : "none";
+}
 
-      // 失敗したらトークン更新（古いトークン対策）
-      loadCsrf();
-    }
-  } catch (e) {
-    showMsg("通信エラーが発生しました。");
-    submitBtn.disabled = false;
-  }
-});
-
-loadCsrf();
+loadUsers(); // 初回読み込み

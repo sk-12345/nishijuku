@@ -20,6 +20,7 @@ function buildMenu({ isAdminOrSystem, isPhoto }) {
     if (isAdminOrSystem) {
         items.push({ href: "../register/register.html", text: "新規アカウント作成" });
         items.push({ href: "../account/account.html", text: "アカウント管理" });
+        items.push({ href: "../trial_admin/trial_admin.html", text: "体験応募一覧" });
     }
 
     items.push({ href: "../practice_post/practice_post.html", text: "練習風景・投稿", extraClass: "main-card" });
@@ -63,7 +64,7 @@ async function loadHome() {
 
     const isAdminOrSystem = !!data.flags?.is_admin_or_system;
 
-    const isPhoto = !!data.flags?.isPphoto;
+    const isPhoto = !!data.flags?.is_photo;
 
     welcomeTitle.innerHTML = `ようこそ、<br>${escapeHtml(fullname)} さん`;
     roleText.textContent = `権限：${roleName}`;
