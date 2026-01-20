@@ -1,16 +1,17 @@
 USE nishijuku;
 
 -- 既にあれば削除
-DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS role_transfer_logs;
 
+-- role_transfer_logs テーブル作成
 CREATE TABLE IF NOT EXISTS role_transfer_logs (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  from_user_id INT UNSIGNED NOT NULL,
-  to_user_id   INT UNSIGNED NOT NULL,
-  from_role_id INT UNSIGNED NOT NULL,
-  to_role_id   INT UNSIGNED NOT NULL,
-  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  KEY idx_from (from_user_id),
-  KEY idx_to   (to_user_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ログID',
+  from_user_id INT UNSIGNED NOT NULL COMMENT '権限移行元ユーザーID',
+  to_user_id INT UNSIGNED NOT NULL COMMENT '権限移行先ユーザーID',
+  from_role_id INT UNSIGNED NOT NULL COMMENT '移行元権限ID',
+  to_role_id INT UNSIGNED NOT NULL COMMENT '移行先権限ID',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '移行日時',
+  PRIMARY KEY (id), -- プライマリキー
+  KEY idx_from (from_user_id), -- 移行元ユーザーIDにインデックス
+  KEY idx_to (to_user_id) -- 移行先ユーザーIDにインデックス
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='ユーザー権限移行ログ';
