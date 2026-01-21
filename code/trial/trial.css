@@ -10,33 +10,32 @@ body {
 }
 
 .wrap {
-    width: min(980px, 92vw);
+    width: min(1100px, 92vw);
     margin: 0 auto;
-    padding: 22px 0 60px;
+    padding: 18px 0 40px;
 }
 
 .hero {
     text-align: center;
     color: #fff;
-    margin-bottom: 14px;
 }
 
 .title {
-    margin: 6px 0 6px;
-    font-size: clamp(22px, 4.5vw, 34px);
+    margin: 10px 0 6px;
+    font-size: clamp(20px, 4.8vw, 30px);
 }
 
 .sub {
     margin: 0 0 10px;
-    opacity: .95;
+    opacity: .9;
 }
 
 .links {
     display: flex;
     justify-content: center;
     gap: 14px;
+    margin: 8px 0 16px;
     flex-wrap: wrap;
-    margin: 10px 0 0;
 }
 
     .links a {
@@ -51,36 +50,31 @@ body {
 
 .card {
     background: #fff;
-    border-radius: 18px;
+    border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0,0,0,.25);
     padding: 16px;
 }
 
+.section-title {
+    margin: 18px 0 10px;
+    font-size: 16px;
+    border-left: 5px solid #0a3d62;
+    padding-left: 10px;
+}
+
 .msg {
-    display: none;
-    border-radius: 14px;
-    padding: 12px 12px;
-    margin-bottom: 12px;
+    min-height: 22px;
+    margin: 0 0 10px;
     font-weight: bold;
 }
 
-    .msg.err {
-        display: block;
-        background: #ffeaea;
-        border: 1px solid #ffb3b3;
-        color: #a40000;
-    }
-
     .msg.ok {
-        display: block;
-        background: #eaffea;
-        border: 1px solid #b3ffb3;
-        color: #006400;
+        color: #0a7a2f;
     }
 
-.form {
-    margin-top: 6px;
-}
+    .msg.ng {
+        color: #b00020;
+    }
 
 .grid {
     display: grid;
@@ -89,8 +83,7 @@ body {
 }
 
 .field {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: 6px;
 }
 
@@ -100,15 +93,12 @@ body {
 
 .label {
     font-weight: bold;
-    color: #0a3d62;
+    font-size: 13px;
 }
 
 .req {
+    color: #b00020;
     font-size: 12px;
-    color: #fff;
-    background: #0a3d62;
-    padding: 2px 8px;
-    border-radius: 999px;
     margin-left: 6px;
 }
 
@@ -117,48 +107,89 @@ body {
     color: #666;
 }
 
-input, textarea {
-    width: 100%;
-    padding: 11px 12px;
+input, select, textarea {
+    border: 1px solid #d0d0d0;
     border-radius: 12px;
-    border: 1px solid #d7d7d7;
-    font-size: 16px;
+    padding: 10px 12px;
+    font-size: 14px;
     outline: none;
 }
 
-    input:focus, textarea:focus {
+    input:focus, select:focus, textarea:focus {
         border-color: #0a3d62;
-        box-shadow: 0 0 0 3px rgba(10,61,98,.12);
+        box-shadow: 0 0 0 3px rgba(10,61,98,.15);
     }
+
+.inline {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.part-card {
+    border: 1px solid #e5e5e5;
+    border-radius: 14px;
+    padding: 12px;
+    margin: 10px 0;
+    background: #fafafa;
+}
+
+.part-title {
+    margin: 0 0 10px;
+    font-weight: bold;
+}
+
+.part-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media (max-width: 720px) {
+    .grid, .part-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
 .actions {
     display: flex;
     gap: 10px;
     justify-content: center;
-    margin-top: 14px;
+    margin-top: 16px;
     flex-wrap: wrap;
 }
 
 .btn {
-    border: 0;
-    border-radius: 12px;
-    padding: 11px 18px;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 18px;
     font-weight: bold;
     cursor: pointer;
     background: #0a3d62;
     color: #fff;
 }
 
-    .btn:hover {
-        filter: brightness(1.05);
-    }
-
     .btn:disabled {
-        opacity: .65;
+        opacity: .6;
         cursor: not-allowed;
     }
 
     .btn.ghost {
-        background: #fff;
+        background: #e9eef3;
         color: #0a3d62;
-        border: 1px
+    }
+
+.note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: #333;
+    text-align: center;
+}
+
+.footer {
+    text-align: center;
+    color: #fff;
+    opacity: .9;
+    margin-top: 14px;
+}

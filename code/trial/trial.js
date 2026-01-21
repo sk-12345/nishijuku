@@ -1,131 +1,121 @@
 ﻿const form = document.getElementById("trialForm");
-const msgEl = document.getElementById("msg");
+const msg = document.getElementById("msg");
 const btn = document.getElementById("submitBtn");
+const resetBtn = document.getElementById("resetBtn");
+const countSelect = document.getElementById("countSelect");
+const participantsArea = document.getElementById("participants");
 
-// 連打防止：送信中フラグ + 送信後クールダウン(ms)
-let isSubmitting = false;
-const COOLDOWN_MS = 1500;
+let sending = false;
 
-function showMsg(text, type) {
-    msgEl.className = "msg " + (type || "");
-    msgEl.textContent = text || "";
-    msgEl.style.display = text ? "block" : "none";
+function setMsg(text, ok = false) {
+    msg.textContent = text || "";
+    msg.classList.toggle("ok", ok);
+    msg.classList.toggle("ng", !ok && !!text);
 }
 
-function normalizePhone(s) {
-    // 数字と + 以外を除去（ハイフンやスペースを消す）
-    return String(s || "").replace(/[^\d+]/g, "");
+function participantHTML(i) {
+    // i: 1..n
+    return `
+  <div class="part-card">
+    <div class="part-title">参加者 ${i}</div>
+    <div class="part-grid">
+      <label class="field">
+        <span class="label">名前 <b class="req">必須</b></span>
+        <input type="text" name="participants[${i}][name]" required maxlength="100" placeholder="例）西塾 花子" />
+      </label>
+
+      <label class="field">
+        <span class="label">区分 <b class="req">必須</b></span>
+        <select name="participants[${i}][category]" required>
+          <option value="幼児">幼児</option>
+          <option value="小学生">小学生</option>
+          <option value="中学生">中学生</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span class="label">学年（必須）</span>
+        <input type="text" name="participants[${i}][grade]" required maxlength="30" placeholder="例）年中 / 小3 / 中1" />
+      </label>
+
+      <label class="field">
+        <span class="label">性別（任意）</span>
+        <select name="participants[${i}][gender]">
+          <option value="">未回答</option>
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span class="label">柔道経験 <b class="req">必須</b></span>
+        <select name="participants[${i}][experience]" required>
+          <option value="未経験">未経験</option>
+          <option value="経験あり">経験あり</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span class="label">経験年数（任意）</span>
+        <input type="text" name="participants[${i}][exp_years]" maxlength="30" placeholder="例）1年 / 3ヶ月" />
+      </label>
+    </div>
+  </div>
+  `;
 }
 
-function isValidEmail(email) {
-    // ブラウザのtype=email + サーバ側でも検証する前提で、ここは軽め
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function isValidPhone(phoneNormalized) {
-    // 日本の一般的な電話を想定：数字だけで 10〜11桁（+81形式も許容）
-    // +81XXXXXXXXX(先頭0無し) もあり得るので 9〜12くらいまで許容しつつ、
-    // 基本は 10/11 を推奨
-    const p = phoneNormalized;
-
-    // +81形式
-    if (p.startsWith("+81")) {
-        const digits = p.replace(/\D/g, "");
-        // "+81"込みで数字は 11〜12程度になることが多い（例: +819012345678 -> 12桁）
-        return digits.length >= 11 && digits.length <= 13;
+function rebuildParticipants() {
+    const n = Math.max(1, Math.min(10, Number(countSelect.value || 1)));
+    participantsArea.innerHTML = "";
+    for (let i = 1; i <= n; i++) {
+        participantsArea.insertAdjacentHTML("beforeend", participantHTML(i));
     }
-
-    // 国内形式（数字のみ想定）
-    const digits = p.replace(/\D/g, "");
-    return digits.length === 10 || digits.length === 11;
 }
 
-function disableButton(text) {
-    btn.disabled = true;
-    btn.textContent = text;
-}
+countSelect.addEventListener("change", rebuildParticipants);
+resetBtn.addEventListener("click", () => {
+    setMsg("");
+    setTimeout(rebuildParticipants, 0);
+});
 
-function enableButton() {
-    btn.disabled = false;
-    btn.textContent = "送信する";
-}
+// 初期生成
+rebuildParticipants();
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    showMsg("", "");
+    if (sending) return;
 
-    // 二重送信防止
-    if (isSubmitting) {
-        showMsg("送信中です。少し待ってください。", "err");
-        return;
-    }
-
-    const fd = new FormData(form);
-
-    // 必須値
-    const name = (fd.get("name") || "").toString().trim();
-    const phoneRaw = (fd.get("phone") || "").toString().trim();
-    const email = (fd.get("email") || "").toString().trim();
-
-    if (!name || !phoneRaw || !email) {
-        showMsg("必須項目（お名前・電話番号・メール）を入力してください。", "err");
-        return;
-    }
-
-    // メール軽チェック（最終はサーバでもチェック）
-    if (!isValidEmail(email)) {
-        showMsg("メールアドレスの形式が正しくありません。", "err");
-        return;
-    }
-
-    // 電話番号：正規化してチェック
-    const phoneNormalized = normalizePhone(phoneRaw);
-
-    if (!isValidPhone(phoneNormalized)) {
-        showMsg("電話番号の形式が正しくありません。（例：090-1234-5678）", "err");
-        return;
-    }
-
-    // サーバへ渡す値をセット
-    fd.set("name", name);
-    fd.set("phone", phoneRaw); // 表示そのまま
-    fd.set("phone_normalized", phoneNormalized); // 整形済み
-    fd.set("email", email);
-
-    // 送信開始
-    isSubmitting = true;
-    disableButton("送信中…");
+    setMsg("");
+    sending = true;
+    btn.disabled = true;
+    btn.textContent = "送信中…";
 
     try {
-        const res = await fetch("submit.php", {
+        const fd = new FormData(form);
+
+        const res = await fetch("send.php", {
             method: "POST",
             body: fd,
-            credentials: "same-origin",
-            cache: "no-store",
         });
 
         const data = await res.json().catch(() => null);
 
-        // JSONが返ってこない（PHPエラー等）
-        if (!data) {
-            throw new Error("送信に失敗しました。時間をおいて再度お試しください。");
-        }
-
-        // 400/500でも error を表示
-        if (!res.ok || !data.ok) {
-            showMsg(data.error || "入力内容を確認してください。", "err");
+        if (!res.ok || !data || data.ok !== true) {
+            const err = data?.error ?? "unknown";
+            const detail = data?.detail ? ` / ${data.detail}` : "";
+            setMsg(`送信失敗: ${err}${detail}`, false);
             return;
         }
 
-        // 成功
-        location.href = "thanks.html";
+        setMsg("送信しました！担当よりご連絡します。", true);
+        form.reset();
+        rebuildParticipants();
+
     } catch (err) {
-        showMsg(err?.message || "送信に失敗しました。", "err");
+        setMsg("通信エラーです。時間を置いて再度お試しください。", false);
     } finally {
-        // すぐ押せないように少し待ってから戻す（連打対策）
-        setTimeout(() => {
-            isSubmitting = false;
-            enableButton();
-        }, COOLDOWN_MS);
+        sending = false;
+        btn.disabled = false;
+        btn.textContent = "送信する";
     }
 });

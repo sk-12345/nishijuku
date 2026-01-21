@@ -13,8 +13,7 @@
             <p class="sub">西塾柔道クラブの体験参加をご希望の方はこちらからお申し込みください。</p>
 
             <nav class="links">
-                <a href="../home/home.html">ホーム</a>
-                <a href="../trial_admin/index.html">体験応募一覧（管理）</a>
+                <a href="../index/index.html">戻る</a>
             </nav>
         </header>
 
@@ -22,10 +21,13 @@
             <div id="msg" class="msg" aria-live="polite"></div>
 
             <form id="trialForm" class="form" novalidate>
+                <!-- 保護者 -->
+                <h2 class="section-title">保護者情報</h2>
+
                 <div class="grid">
                     <label class="field">
-                        <span class="label">お名前 <b class="req">必須</b></span>
-                        <input type="text" name="name" autocomplete="name" required maxlength="100" placeholder="例）西塾 太郎" />
+                        <span class="label">保護者氏名 <b class="req">必須</b></span>
+                        <input type="text" name="guardian_name" autocomplete="name" required maxlength="100" placeholder="例）西塾 太郎" />
                     </label>
 
                     <label class="field">
@@ -39,25 +41,41 @@
                     </label>
 
                     <label class="field">
-                        <span class="label">学年 / 年齢（任意）</span>
-                        <input type="text" name="age" maxlength="50" placeholder="例）小3 / 9歳" />
-                    </label>
-
-                    <label class="field field-full">
                         <span class="label">希望日（任意）</span>
                         <input type="text" name="preferred_date" maxlength="50" placeholder="例）2/10（土）夕方希望" />
                         <span class="hint">※ 相談しながら決めてもOKです</span>
                     </label>
-
-                    <label class="field field-full">
-                        <span class="label">備考（任意）</span>
-                        <textarea name="message" rows="6" maxlength="2000" placeholder="例）柔道経験あり / 初心者 / 体験したい理由 など"></textarea>
-                    </label>
                 </div>
+
+                <!-- 人数 -->
+                <h2 class="section-title">参加人数</h2>
+                <div class="inline">
+                    <label class="field">
+                        <span class="label">人数 <b class="req">必須</b></span>
+                        <select id="countSelect" name="count" required>
+                            <option value="1">1人</option>
+                            <option value="2">2人</option>
+                            <option value="3">3人</option>
+                            <option value="4">4人</option>
+                        </select>
+                    </label>
+                    <p class="hint">※ 兄弟で参加する場合も1回で送れます</p>
+                </div>
+
+                <!-- 参加者 -->
+                <h2 class="section-title">参加者情報</h2>
+                <div id="participants"></div>
+
+                <!-- 備考（保護者からの全体メモ） -->
+                <h2 class="section-title">備考（任意）</h2>
+                <label class="field field-full">
+                    <span class="label">備考（全体）</span>
+                    <textarea name="message" rows="6" maxlength="2000" placeholder="例）兄弟で参加 / 初心者 / 不安点 など"></textarea>
+                </label>
 
                 <div class="actions">
                     <button id="submitBtn" class="btn" type="submit">送信する</button>
-                    <button class="btn ghost" type="reset">リセット</button>
+                    <button class="btn ghost" type="reset" id="resetBtn">リセット</button>
                 </div>
 
                 <p class="note">
