@@ -13,7 +13,7 @@ return [
   // アプリパスワード（16桁）※スペース無し推奨
   'GMAIL_APP'  => 'acvqkivmheonhcbn',
 
-  // 受信先（自分宛てでOK）
+  // 受信先
   'TO_MAIL'    => '346kou3110@gmail.com',
 
   // 表示名
