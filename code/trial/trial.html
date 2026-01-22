@@ -20,7 +20,8 @@
         <main class="card">
             <div id="msg" class="msg" aria-live="polite"></div>
 
-            <form id="trialForm" class="form" novalidate>
+            <!-- ✅ novalidate を削除（requiredを効かせる） -->
+            <form id="trialForm" class="form">
                 <!-- 保護者 -->
                 <h2 class="section-title">保護者情報</h2>
 
@@ -31,8 +32,8 @@
                     </label>
 
                     <label class="field">
-                        <span class="label">電話番号 <b class="req">必須</b></span>
-                        <input type="tel" name="phone" autocomplete="tel" required maxlength="30" placeholder="例）090-1234-5678" />
+                        <span class="label">電話番号（任意）</span>
+                        <input type="tel" name="phone" autocomplete="tel" maxlength="30" placeholder="例）090-1234-5678" />
                     </label>
 
                     <label class="field">
@@ -43,7 +44,6 @@
                     <label class="field">
                         <span class="label">希望日（任意）</span>
                         <input type="text" name="preferred_date" maxlength="50" placeholder="例）2/10（土）夕方希望" />
-                        <span class="hint">※ 相談しながら決めてもOKです</span>
                     </label>
                 </div>
 
@@ -66,7 +66,7 @@
                 <h2 class="section-title">参加者情報</h2>
                 <div id="participants"></div>
 
-                <!-- 備考（保護者からの全体メモ） -->
+                <!-- 備考 -->
                 <h2 class="section-title">備考（任意）</h2>
                 <label class="field field-full">
                     <span class="label">備考（全体）</span>
@@ -79,8 +79,7 @@
                 </div>
 
                 <p class="note">
-                    送信内容は、体験日程の調整にのみ利用します。<br>
-                    ※ このフォームはログイン不要で誰でも送信できます。
+                    送信内容は、体験日程の調整にのみ利用します。
                 </p>
             </form>
         </main>

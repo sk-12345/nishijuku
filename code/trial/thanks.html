@@ -1,0 +1,49 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>応募ありがとうございました | 西塾柔道クラブ</title>
+    <link rel="stylesheet" href="trial.css" />
+</head>
+<body>
+    <div class="wrap">
+        <header class="hero">
+            <h1 class="title">応募ありがとうございました</h1>
+            <p class="sub">内容を確認のうえ、担当よりご連絡いたします。</p>
+            <nav class="links">
+                <a href="../index/index.html">トップへ戻る</a>
+            </nav>
+        </header>
+
+        <main class="card">
+            <p id="thanksText" style="margin:0; line-height:1.8;">
+                送信を受け付けました。<br>
+                返信までしばらくお待ちください。
+            </p>
+
+            <div class="actions" style="margin-top:16px;">
+                <a class="btn" href="../index/index.html" style="display:inline-block; text-decoration:none;">トップへ</a>
+                <a class="btn ghost" href="trial.html" style="display:inline-block; text-decoration:none;">もう一度応募する</a>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <small>© Nishijuku Judo Club</small>
+        </footer>
+    </div>
+
+    <script>
+        // 任意：保護者名があれば表示
+        const params = new URLSearchParams(location.search);
+        const name = params.get("name");
+        if (name) {
+            const safe = name.replace(/[<>"'&]/g, (c) => ({
+                "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;", "&": "&amp;"
+            }[c]));
+            document.getElementById("thanksText").innerHTML =
+                `${safe} 様<br>応募を受け付けました。<br>担当よりご連絡いたします。`;
+        }
+    </script>
+</body>
+</html>
