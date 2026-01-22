@@ -1,20 +1,51 @@
-// 画面が読み込まれてから実行
 document.addEventListener("DOMContentLoaded", () => {
-    const navToggle = document.getElementById("navToggle");   // 三本線ボタン
-    const navDrawer = document.getElementById("navDrawer");   // 下から出るメニュー
+    const navToggle = document.getElementById("navToggle");
+    const navDrawer = document.getElementById("navDrawer");
 
-    // 念のため要素が取れなかったときは何もしない
     if (!navToggle || !navDrawer) return;
 
-    // 三本線をクリックしたとき
-    navToggle.addEventListener("click", () => {
-        navDrawer.classList.toggle("open"); // ← ここで .open つけたり消したり
+    function openDrawer() {
+        navDrawer.classList.add("open");
+        navToggle.setAttribute("aria-expanded", "true");
+    }
+
+    function closeDrawer() {
+        navDrawer.classList.remove("open");
+        navToggle.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleDrawer() {
+        if (navDrawer.classList.contains("open")) {
+            closeDrawer();
+        } else {
+            openDrawer();
+        }
+    }
+
+    navToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleDrawer();
     });
 
-    // メニューのリンクを押したら閉じる
-    navDrawer.querySelectorAll("a").forEach(link => {
+    // ドロワー内リンククリックで閉じる
+    navDrawer.querySelectorAll("a").forEach((link) => {
         link.addEventListener("click", () => {
-            navDrawer.classList.remove("open");
+            closeDrawer();
         });
+    });
+
+    // 外側クリックで閉じる
+    document.addEventListener("click", (e) => {
+        if (!navDrawer.classList.contains("open")) return;
+        const target = e.target;
+        if (target instanceof Element) {
+            const clickedInside = navDrawer.contains(target) || navToggle.contains(target);
+            if (!clickedInside) closeDrawer();
+        }
+    });
+
+    // Escで閉じる
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeDrawer();
     });
 });

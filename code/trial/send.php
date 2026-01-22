@@ -20,10 +20,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 $config = require __DIR__ . '/config.php';
 $GMAIL_USER = (string)($config['GMAIL_USER'] ?? '');
 $GMAIL_APP  = (string)($config['GMAIL_APP'] ?? '');
-$TO_MAIL    = (string)($config['TO_MAIL'] ?? '');
+$TO_MAIL    = $config['TO_MAIL'] ?? []; // ✅ string でも array でもOK
 $FROM_NAME  = (string)($config['FROM_NAME'] ?? '西塾柔道クラブ');
 
-if ($GMAIL_USER === '' || $GMAIL_APP === '' || $TO_MAIL === '') {
+if ($GMAIL_USER === '' || $GMAIL_APP === '') {
   jexit(['ok' => false, 'error' => 'config_missing'], 500);
 }
 
@@ -37,7 +37,7 @@ use PHPMailer\PHPMailer\Exception;
 
 // ---- 入力取得（保護者）----
 $guardian = trim((string)($_POST['guardian_name'] ?? ''));
-$phone    = trim((string)($_POST['phone'] ?? ''));
+$phone    = trim((string)($_POST['phone'] ?? '')); // 任意
 $email    = trim((string)($_POST['email'] ?? ''));
 $pref     = trim((string)($_POST['preferred_date'] ?? ''));
 $message  = trim((string)($_POST['message'] ?? ''));
@@ -46,8 +46,8 @@ $message  = trim((string)($_POST['message'] ?? ''));
 $participants = $_POST['participants'] ?? null;
 if (!is_array($participants)) $participants = [];
 
-// ---- バリデーション ----
-if ($guardian === '' || $phone === '' || $email === '') {
+// ---- バリデーション（保護者）----
+if ($guardian === '' || $email === '') {
   jexit(['ok' => false, 'error' => 'required_missing'], 400);
 }
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -63,29 +63,57 @@ if (count($participants) < 1) {
   jexit(['ok' => false, 'error' => 'participants_missing'], 400);
 }
 
-// 参加者の中身チェック（1..nのキーを想定）
+// ---- 学年の許可リスト ----
+$grades_el = [];
+for ($i = 1; $i <= 6; $i++) $grades_el[] = "{$i}年生";
+$grades_jr = [];
+for ($i = 1; $i <= 3; $i++) $grades_jr[] = "{$i}年生";
+
+// ---- 参加者の中身チェック ----
 $clean = [];
+
 foreach ($participants as $idx => $p) {
   if (!is_array($p)) continue;
 
-  $name = trim((string)($p['name'] ?? ''));
-  $cat  = trim((string)($p['category'] ?? ''));
-  $grade = trim((string)($p['grade'] ?? ''));
-  $gender = trim((string)($p['gender'] ?? ''));
-  $exp = trim((string)($p['experience'] ?? ''));
-  $years = trim((string)($p['exp_years'] ?? ''));
+  $name   = trim((string)($p['name'] ?? ''));        // 任意
+  $cat    = trim((string)($p['category'] ?? ''));    // 必須
+  $grade  = trim((string)($p['grade'] ?? ''));       // 幼児は不要
+  $gender = trim((string)($p['gender'] ?? ''));      // 必須
+  $exp    = trim((string)($p['experience'] ?? ''));  // 必須
+  $years  = trim((string)($p['exp_years'] ?? ''));   // 任意
 
-  if ($name === '' || $cat === '' || $grade === '' || $exp === '') {
+  // 必須チェック（参加者）
+  if ($cat === '' || $gender === '' || $exp === '') {
     jexit(['ok' => false, 'error' => 'participant_required_missing'], 400);
   }
-  if (!in_array($cat, ['幼児','小学生','中学生'], true)) {
+
+  // 値チェック
+  if (!in_array($cat, ['幼児', '小学生', '中学生'], true)) {
     jexit(['ok' => false, 'error' => 'participant_category_invalid'], 400);
   }
-  if ($gender !== '' && !in_array($gender, ['男','女'], true)) {
+  if (!in_array($gender, ['男', '女'], true)) {
     jexit(['ok' => false, 'error' => 'participant_gender_invalid'], 400);
   }
-  if (!in_array($exp, ['未経験','経験あり'], true)) {
+  if (!in_array($exp, ['未経験', '経験あり'], true)) {
     jexit(['ok' => false, 'error' => 'participant_experience_invalid'], 400);
+  }
+
+  // ✅ 学年ルール
+  if ($cat === '幼児') {
+    $grade = ''; // 幼児は学年不要
+  } elseif ($cat === '小学生') {
+    if ($grade === '' || !in_array($grade, $grades_el, true)) {
+      jexit(['ok' => false, 'error' => 'participant_grade_invalid'], 400);
+    }
+  } elseif ($cat === '中学生') {
+    if ($grade === '' || !in_array($grade, $grades_jr, true)) {
+      jexit(['ok' => false, 'error' => 'participant_grade_invalid'], 400);
+    }
+  }
+
+  // 文字数制限
+  if (mb_strlen($name) > 100 || mb_strlen($years) > 30) {
+    jexit(['ok' => false, 'error' => 'too_long'], 400);
   }
 
   $clean[] = [
@@ -102,6 +130,23 @@ if (count($clean) < 1) {
   jexit(['ok' => false, 'error' => 'participants_missing'], 400);
 }
 
+// ---- 宛先（To複数対応：方法①）----
+$toList = $TO_MAIL;
+if (is_string($toList)) {
+  $toList = [$toList];
+}
+if (!is_array($toList) || count($toList) === 0) {
+  jexit(['ok' => false, 'error' => 'to_mail_missing'], 500);
+}
+
+// 不正っぽいのは弾く（軽く）
+$toList = array_values(array_filter($toList, function($v) {
+  return is_string($v) && $v !== '';
+}));
+if (count($toList) === 0) {
+  jexit(['ok' => false, 'error' => 'to_mail_missing'], 500);
+}
+
 // ---- 件名/本文整形 ----
 $subject = '【西塾体験応募】' . $guardian . ' 様（' . count($clean) . '名）';
 
@@ -110,7 +155,7 @@ $body =
 "----------------------------------\n".
 "【保護者情報】\n".
 "保護者氏名: {$guardian}\n".
-"電話番号: {$phone}\n".
+"電話番号: " . ($phone !== '' ? $phone : '（未入力）') . "\n".
 "メール: {$email}\n".
 "希望日: " . ($pref !== '' ? $pref : '（未入力）') . "\n\n";
 
@@ -118,10 +163,10 @@ $body .= "【参加者】\n";
 $no = 1;
 foreach ($clean as $p) {
   $body .= "--- 参加者{$no} ---\n";
-  $body .= "名前: {$p['name']}\n";
+  $body .= "名前: " . ($p['name'] !== '' ? $p['name'] : '（未入力）') . "\n";
   $body .= "区分: {$p['category']}\n";
-  $body .= "学年: {$p['grade']}\n";
-  $body .= "性別: " . ($p['gender'] !== '' ? $p['gender'] : '（未回答）') . "\n";
+  $body .= "学年: " . ($p['grade'] !== '' ? $p['grade'] : '（不要/未入力）') . "\n";
+  $body .= "性別: {$p['gender']}\n";
   $body .= "経験: {$p['experience']}\n";
   $body .= "経験年数: " . ($p['exp_years'] !== '' ? $p['exp_years'] : '（未入力）') . "\n\n";
   $no++;
@@ -142,7 +187,7 @@ try {
     error_log("SMTP[$level] $str");
   };
 
-  // Gmail SMTP（安定の465/SMTPS）
+  // Gmail SMTP（465/SMTPS）
   $mail->isSMTP();
   $mail->Host = 'smtp.gmail.com';
   $mail->SMTPAuth = true;
@@ -154,13 +199,17 @@ try {
   $mail->Port = 465;
 
   $mail->setFrom($GMAIL_USER, $FROM_NAME);
-  $mail->addAddress($TO_MAIL);
+
+  // ✅ To 複数
+  foreach ($toList as $addr) {
+    $mail->addAddress($addr);
+  }
 
   // フォームのメールを返信先に（返信が楽）
   $mail->addReplyTo($email, $guardian);
 
   $mail->Subject = $subject;
-  $mail->Body = $body;
+  $mail->Body    = $body;
 
   $mail->send();
   jexit(['ok' => true]);

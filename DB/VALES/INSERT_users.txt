@@ -23,14 +23,14 @@ VALUES
 '$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS',
 '一般ユーザー', 4, NOW(), NOW()),
 
-(5, '齋藤　航',
+(5, 'kou',
 '$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS',
-'管理者ユーザー', 2, NOW(), NOW()),
+'齋藤　航', 2, NOW(), NOW()),
 
-(6, '齋藤　來',
+(6, 'rai',
 '$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS',
-'管理者ユーザー', 2, NOW(), NOW()),
+'齋藤　來', 2, NOW(), NOW()),
 
-(7, '齋藤　和俊',
+(7, 'kazu',
 '$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS',
-'管理者ユーザー', 2, NOW(), NOW());
+'齋藤　和俊', 2, NOW(), NOW());
