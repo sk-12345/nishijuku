@@ -11,11 +11,11 @@ return [
   'GMAIL_USER' => 'hatujukai2419@gmail.com',
   
   // アプリパスワード（16桁）※スペース無し推奨
-  'GMAIL_APP'  => 'ekxskyrxmpjuonqy',
+  'GMAIL_APP'  => 'haqgrqvqvkbzdqob',
 
   // ✅ 受信先（Toで複数）
   'TO_MAIL' => [
-    '346kou3110@gmail.com',
+    'ここにアカウントを挿入',
   ],
 
   // 差出人表示名
