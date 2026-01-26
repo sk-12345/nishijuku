@@ -174,7 +174,7 @@ foreach ($clean as $p) {
 
 $body .= "【備考（全体）】\n" . ($message !== '' ? $message : '（未入力）') . "\n";
 $body .= "----------------------------------\n";
-$body .= "送信元IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . "\n";
+$body .= "送信元: 西塾応募ページ" . "\n";
 $body .= "送信日時: " . date('Y-m-d H:i:s') . "\n";
 
 try {
