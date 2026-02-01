@@ -91,7 +91,7 @@ function render(data) {
             const passCell = u.can_change_password
                 ? `
           <form class="pass-form" onsubmit="return submitPassword(event, ${escapeHtml(id)})">
-            <input type="password" name="new_password" placeholder="新パス（4文字以上）" required minlength="8">
+            <input type="password" name="new_password" placeholder="新パス（4文字以上）" required minlength="4">
             <button class="pass-btn" type="submit">変更</button>
           </form>
         `
