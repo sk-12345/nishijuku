@@ -1,4 +1,4 @@
-const params = new URLSearchParams(location.search);
+ï»¿const params = new URLSearchParams(location.search);
 const msgEl = document.getElementById("msg");
 
 function showMsg(text, isError) {
@@ -9,17 +9,17 @@ function showMsg(text, isError) {
 }
 
 if (params.has("ok")) {
-    showMsg("ƒpƒXƒ[ƒh‚ğ•ÏX‚µ‚Ü‚µ‚½B", false);
+    showMsg("ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å¤‰æ›´ã—ã¾ã—ãŸã€‚", false);
 }
 
 const err = params.get("err");
 if (err) {
-    // errƒR[ƒh‚ğƒƒbƒZ[ƒW‚É•ÏŠ·
+    // errã‚³ãƒ¼ãƒ‰ã‚’ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã«å¤‰æ›
     const map = {
-        "mismatch": "V‚µ‚¢ƒpƒXƒ[ƒhiŠm”Fj‚ªˆê’v‚µ‚Ü‚¹‚ñB",
-        "current": "Œ»İ‚ÌƒpƒXƒ[ƒh‚ªˆá‚¢‚Ü‚·B",
-        "short": "V‚µ‚¢ƒpƒXƒ[ƒh‚Í6•¶šˆÈã‚É‚µ‚Ä‚­‚¾‚³‚¢B",
-        "failed": "•ÏX‚É¸”s‚µ‚Ü‚µ‚½B",
+        "mismatch": "æ–°ã—ã„ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ï¼ˆç¢ºèªï¼‰ãŒä¸€è‡´ã—ã¾ã›ã‚“ã€‚",
+        "current": "ç¾åœ¨ã®ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãŒé•ã„ã¾ã™ã€‚",
+        "short": "æ–°ã—ã„ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã¯8æ–‡å­—ä»¥ä¸Šã«ã—ã¦ãã ã•ã„ã€‚",
+        "failed": "å¤‰æ›´ã«å¤±æ•—ã—ã¾ã—ãŸã€‚",
     };
-    showMsg(map[err] ?? "“ü—Í“à—e‚ğŠm”F‚µ‚Ä‚­‚¾‚³‚¢B", true);
+    showMsg(map[err] ?? "å…¥åŠ›å†…å®¹ã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚", true);
 }
