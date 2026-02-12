@@ -513,4 +513,102 @@ body {
     background: linear-gradient(135deg, #b45309, #92400e);
 }
 
+.section-teacher {
+    background: rgba(135, 206, 235, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 18px;
+    padding: 18px 18px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.section-student {
+    background: rgba(250, 218, 221, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 18px;
+    padding: 18px 18px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.three-column {
+    display: flex;
+    gap: 16px;
+}
+
+.ob-photo {
+    flex: 1;
+    text-align: center;
+}
+
+    /* 写真サイズを統一 */
+    .ob-photo img {
+        width: 100%;
+        height: 500px; /* ←高さ固定 */
+        object-fit: cover; /* 自動トリミング */
+        border-radius: 12px;
+    }
+
+.ob-name {
+    margin-top: 8px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+    .ob-name ruby {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .ob-name rt {
+        font-size: 12px;
+        color: #666;
+    }
+
+
+.ob-career {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #555;
+    text-align: left;
+}
+
+.teacher-photo {
+    flex: 1;
+    text-align: center;
+}
+
+    /* 写真サイズを統一 */
+    .teacher-photo img {
+        width: 100%;
+        height: 500px; /* ←高さ固定 */
+        object-fit: cover; /* 自動トリミング */
+        border-radius: 12px;
+    }
+
+.teacher-name {
+    margin-top: 8px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+    .teacher-name ruby {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .teacher-name rt {
+        font-size: 12px;
+        color: #666;
+    }
+
+
+.teacher-career {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #555;
+    text-align: left;
+}
+
+
+
+
 

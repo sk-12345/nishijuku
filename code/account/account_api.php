@@ -127,17 +127,37 @@ try {
     $roles = $rolesStmt->fetchAll(PDO::FETCH_ASSOC);
 
     // users + roles
-    $stmt = $pdo->query("
-        SELECT
-            u.id,
-            u.login_id,
-            u.name,
-            u.role_id,
-            r.role_name
-        FROM users u
-        JOIN roles r ON u.role_id = r.id
-        ORDER BY u.id
-    ");
+
+    if($myRole === 2) {
+        // ADMINはSYSTEMを除外
+        $stmt = $pdo->query("
+            SELECT
+                u.id,
+                u.login_id,
+                u.name,
+                u.role_id,
+                r.role_name
+            FROM users u
+            JOIN roles r ON u.role_id = r.id
+            WHERE u.role_id <> 1 
+            AND u.role_id  <> 2
+            ORDER BY u.role_id;
+        ");
+    } else {
+        // SYSTEMは全員取得
+        $stmt = $pdo->query("
+            SELECT
+                u.id,
+                u.login_id,
+                u.name,
+                u.role_id,
+                r.role_name
+            FROM users u
+            JOIN roles r ON u.role_id = r.id
+            WHERE u.role_id <> 1 
+            ORDER BY u.role_id
+        ");
+    }
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // 自分の権限で「変更先の候補」

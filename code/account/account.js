@@ -109,7 +109,6 @@ function render(data) {
 
             return `
         <tr>
-          <td data-label="ID">${escapeHtml(u.id)}</td>
           <td data-label="ログインID">${escapeHtml(u.login_id)}</td>
           <td data-label="名前">${escapeHtml(u.name)}</td>
           <td data-label="権限変更">${changeCell}</td>
