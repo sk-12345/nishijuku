@@ -546,17 +546,10 @@ body {
     /* 写真サイズを統一 */
     .ob-photo img {
         width: 100%;
-        height: 500px; /* ←高さ固定 */
+        aspect-ratio: 3 / 4; /* ← 好きな比率に変更OK */
         object-fit: cover; /* 自動トリミング */
         border-radius: 12px;
     }
-
-/* スマホ */
-@media (max-width: 768px) {
-    .ob-photo img {
-        width: 100%;
-    }
-}
 
 .ob-name {
     margin-top: 8px;
@@ -590,17 +583,10 @@ body {
     /* PC */
     .teacher-photo img {
         width: 100%;
-        height: 500px;
-        object-fit: cover;
+        aspect-ratio: 3 / 4; /* ← 好きな比率に変更OK */
+        object-fit: cover; /* 自動トリミング */
         border-radius: 12px;
     }
-
-/* スマホ */
-@media (max-width: 600px) {
-    .teacher-photo img {
-        width: 100%;
-    }
-}
 
 .teacher-name {
     margin-top: 8px;
