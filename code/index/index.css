@@ -98,11 +98,6 @@ body {
     cursor: pointer;
 }
 
-/* Hamburger */
-.nav-smart {
-    margin-left: auto;
-}
-
 /* Drawer (mobile) */
 .nav-drawer {
     position: fixed;
@@ -294,7 +289,6 @@ body {
     }
 
 .btn-primary {
-    background: #ffffff;
     color: #111827;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
@@ -447,6 +441,11 @@ body {
     .nav-drawer {
         display: none !important;
     }
+
+    .nav-smart {
+        margin-left: auto;
+        display: none;
+    }
 }
 
 @media (max-width: 600px) {
@@ -460,6 +459,11 @@ body {
 
     .three-column {
         flex-direction: column;
+    }
+
+    .nav-smart {
+        margin-left: auto;
+        display: block;
     }
 }
 
@@ -617,6 +621,17 @@ body {
     text-align: left;
 }
 
+.red {
+    background: #dc3545;
+}
+
+.yellow {
+    background: #f9e79f;
+}
+
+.blue {
+    background: #007bff;
+}
 
 
 
