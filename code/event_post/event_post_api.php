@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // =========================
 // GET：一覧取得
 // =========================
-$stmt = $pdo->query("SELECT * FROM events ORDER BY id DESC");
+$stmt = $pdo->query("SELECT * FROM events ORDER BY created_at DESC");
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // 画像URL付与
