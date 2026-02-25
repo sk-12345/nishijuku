@@ -1,0 +1,15 @@
+USE nishijuku;
+-- event_images（複数写真）
+DROP TABLE IF EXISTS event_images;
+
+CREATE TABLE event_images (
+  id INT AUTO_INCREMENT NOT NULL COMMENT '画像ID',
+  event_id INT NOT NULL COMMENT 'イベントID',
+  image_path VARCHAR(255) COMMENT '写真パス',
+  PRIMARY KEY (id),
+  INDEX(event_id)
+)
+ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC
+COLLATE=utf8mb4_general_ci
+COMMENT='イベント写真';

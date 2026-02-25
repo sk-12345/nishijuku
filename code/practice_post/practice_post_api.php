@@ -26,129 +26,188 @@ if (!is_dir($UPLOAD_DIR_REAL)) {
     @mkdir($UPLOAD_DIR_REAL, 0777, true);
 }
 
-// 投稿/削除可否（フロント表示用）
-$can_post   = in_array($role_id, [1, 2, 3], true); // SYSTEM/ADMIN/PHOTO
-$can_delete = ($role_id !== 4);                    // GENERAL以外
+// 投稿/削除可否
+$can_post   = in_array($role_id, [1,2,3,5], true);
+$can_delete = ($role_id !== 4);
 
 // =========================
-// POST：追加 or 削除
+// POST処理
 // =========================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $action = $_POST['action'] ?? '';
 
-    // ---- 削除 ----
+    // =====================
+    // 削除
+    // =====================
     if ($action === 'delete') {
 
         if (!$can_delete) {
             http_response_code(403);
-            echo json_encode(['error' => 'no_delete_permission'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['error'=>'no_delete_permission']);
             exit;
         }
 
         $delete_id = (int)($_POST['delete_id'] ?? 0);
-        if ($delete_id <= 0) {
-            http_response_code(400);
-            echo json_encode(['error' => 'invalid_delete_id'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
 
-        // 画像ファイル名取得
-        $stmt = $pdo->prepare("SELECT image_path FROM practices WHERE id = ?");
+        // 画像取得
+        $stmt = $pdo->prepare("
+            SELECT image_path
+            FROM practice_images
+            WHERE practice_id=?
+        ");
         $stmt->execute([$delete_id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($row) {
-            $filename = basename($row['image_path'] ?? '');
-            if ($filename !== '') {
-                $realPath = $UPLOAD_DIR_REAL . $filename;
-                if (is_file($realPath)) {
-                    @unlink($realPath);
-                }
+        foreach ($images as $img){
+
+            $file = $UPLOAD_DIR_REAL . basename($img['image_path']);
+
+            if(is_file($file)){
+                @unlink($file);
             }
-
-            $stmt = $pdo->prepare("DELETE FROM practices WHERE id = ?");
-            $stmt->execute([$delete_id]);
         }
 
-        echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
+        // DB削除
+        $pdo->prepare("DELETE FROM practice_images WHERE practice_id=?")
+            ->execute([$delete_id]);
+
+        $pdo->prepare("DELETE FROM practices WHERE id=?")
+            ->execute([$delete_id]);
+
+        echo json_encode(['ok'=>true]);
         exit;
     }
 
-    // ---- 追加 ----
+    // =====================
+    // 投稿
+    // =====================
     if ($action === 'add') {
 
         if (!$can_post) {
             http_response_code(403);
-            echo json_encode(['error' => 'no_post_permission'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['error'=>'no_post_permission']);
             exit;
         }
 
         $title       = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
 
-        if ($title === '' || $description === '') {
+        if ($title=='' || $description==''){
             http_response_code(400);
-            echo json_encode(['error' => 'title_description_required'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['error'=>'title_required']);
             exit;
         }
 
-        if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+        if (!isset($_FILES['images'])){
             http_response_code(400);
-            echo json_encode(['error' => 'image_required'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['error'=>'images_required']);
             exit;
         }
 
-        $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        if (!in_array($ext, $allowed, true)) {
-            http_response_code(400);
-            echo json_encode(['error' => 'invalid_image_ext'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        $filename = uniqid('practice_', true) . '.' . $ext;
-        $realPath = $UPLOAD_DIR_REAL . $filename;
-
-        if (!move_uploaded_file($_FILES['image']['tmp_name'], $realPath)) {
-            http_response_code(500);
-            echo json_encode([
-                'error' => 'upload_failed',
-                'hint'  => 'img/practices の書き込み権限・パスを確認'
-            ], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        $stmt = $pdo->prepare("
-            INSERT INTO practices (title, description, image_path, created_by, created_at)
-            VALUES (?, ?, ?, ?, NOW())
+        // 投稿登録
+        $stmt=$pdo->prepare("
+            INSERT INTO practices
+            (title,description,created_by,created_at)
+            VALUES(?,?,?,NOW())
         ");
-        $stmt->execute([$title, $description, $filename, $user_id]);
 
-        echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
+        $stmt->execute([
+            $title,
+            $description,
+            $user_id
+        ]);
+
+        $practice_id=$pdo->lastInsertId();
+
+        // 画像保存
+        foreach($_FILES['images']['tmp_name'] as $i=>$tmp){
+
+            if($_FILES['images']['error'][$i]!==UPLOAD_ERR_OK){
+                continue;
+            }
+
+            $ext=strtolower(
+                pathinfo($_FILES['images']['name'][$i],PATHINFO_EXTENSION)
+            );
+
+            $allowed=['jpg','jpeg','png','gif','webp'];
+
+            if(!in_array($ext,$allowed,true)){
+                continue;
+            }
+
+            $filename=uniqid('practice_',true).'.'.$ext;
+
+            move_uploaded_file(
+                $tmp,
+                $UPLOAD_DIR_REAL.$filename
+            );
+
+            // DB登録
+            $pdo->prepare("
+                INSERT INTO practice_images
+                (practice_id,image_path)
+                VALUES(?,?)
+            ")->execute([
+                $practice_id,
+                $filename
+            ]);
+
+        }
+
+        echo json_encode(['ok'=>true]);
         exit;
     }
 
     http_response_code(400);
-    echo json_encode(['error' => 'unknown_action'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error'=>'unknown_action']);
     exit;
 }
 
-// =========================
-// GET：一覧取得
-// =========================
-$stmt = $pdo->query("SELECT * FROM practices ORDER BY created_at DESC");
-$practices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ($practices as &$e) {
-    $e['image_url'] = $UPLOAD_DIR_URL . ($e['image_path'] ?? '');
+// =========================
+// GET一覧取得
+// =========================
+
+$stmt=$pdo->query("
+SELECT *
+FROM practices
+ORDER BY created_at DESC
+");
+
+$rows=$stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+// 画像結合
+foreach($rows as &$r){
+
+    $stmt2=$pdo->prepare("
+        SELECT image_path
+        FROM practice_images
+        WHERE practice_id=?
+    ");
+
+    $stmt2->execute([$r['id']]);
+
+    $imgs=$stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+    $r['images']=[];
+
+    foreach($imgs as $img){
+
+        $r['images'][]=
+            $UPLOAD_DIR_URL.$img['image_path'];
+    }
+
 }
 
+
 echo json_encode([
-    'me' => [
-        'role_id'    => $role_id,
-        'can_post'   => $can_post,
-        'can_delete' => $can_delete,
+    'me'=>[
+        'role_id'=>$role_id,
+        'can_post'=>$can_post,
+        'can_delete'=>$can_delete
     ],
-    'practices' => $practices
-], JSON_UNESCAPED_UNICODE);
+    'practices'=>$rows
+],JSON_UNESCAPED_UNICODE);

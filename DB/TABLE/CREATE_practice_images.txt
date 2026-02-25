@@ -1,0 +1,14 @@
+USE nishijuku;
+DROP TABLE IF EXISTS practice_images;
+
+CREATE TABLE practice_images (
+  id INT AUTO_INCREMENT NOT NULL COMMENT '画像ID',
+  practice_id INT NOT NULL COMMENT '練習ID',
+  image_path VARCHAR(255) COMMENT '写真パス',
+  PRIMARY KEY (id),
+  INDEX(practice_id)
+)
+ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC
+COLLATE=utf8mb4_general_ci
+COMMENT='練習写真';
