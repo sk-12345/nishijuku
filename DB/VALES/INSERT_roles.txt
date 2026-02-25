@@ -3,8 +3,9 @@ USE nishijuku;
 
 DELETE FROM roles;
 
-INSERT INTO roles (id, role_name, description) VALUES
-(1, 'システム管理者',  'システム管理者'),
-(2, '管理者',   '管理者'),
-(3, '写真',   '写真ユーザー'),
-(4, '一般', '一般ユーザー');
+INSERT INTO roles (id, display_order, role_name, description) VALUES
+(1,1,'システム管理者','システム管理者'),
+(2,2,'管理者','管理者'),
+(3,4,'保護者','写真を投稿できる保護者ユーザー'),
+(4,5,'保護者','一般ユーザー'),
+(5,3,'先生','先生ユーザ');

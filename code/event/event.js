@@ -1,80 +1,162 @@
 const API_URL = "event_api.php";
 
 const grid = document.getElementById("eventGrid");
+
 const modal = document.getElementById("modal");
 const modalTitle = document.getElementById("modal-title");
 const modalImg = document.getElementById("modal-img");
 const modalText = document.getElementById("modal-text");
 const modalClose = document.getElementById("modal-close");
 
+
 function lines(s) {
     return String(s ?? "").split("\n");
 }
 
-function openModal(imgSrc, title, desc) {
+
+// モーダル表示
+function openModal(img, title, desc) {
+
     modal.style.display = "flex";
+
     modalTitle.textContent = title ?? "";
-    modalImg.src = imgSrc ?? "";
+
+    modalImg.src = img ?? "";
+
     modalText.innerHTML = "";
+
     for (const line of lines(desc)) {
-        modalText.append(document.createTextNode(line));
-        modalText.append(document.createElement("br"));
+
+        modalText.append(line);
+
+        modalText.append(
+            document.createElement("br")
+        );
     }
+
 }
 
-function closeModal() {
-    modal.style.display = "none";
-}
 
-modal.addEventListener("click", closeModal);
-modal.querySelector(".modal-content").addEventListener("click", (e) => e.stopPropagation());
-modalClose.addEventListener("click", closeModal);
+// 閉じる
+modal.addEventListener(
+    "click",
+    () => modal.style.display = "none"
+);
 
-async function loadEvents() {
-    try {
-        const res = await fetch(API_URL, { cache: "no-store" });
-        if (!res.ok) throw new Error("fetch failed");
+modalClose.addEventListener(
+    "click",
+    () => modal.style.display = "none"
+);
 
-        const events = await res.json();
-        grid.innerHTML = "";
 
-        if (!events || events.length === 0) {
-            const p = document.createElement("p");
-            p.className = "no-event";
-            p.textContent = "現在、公開中のイベントはありません。";
-            grid.appendChild(p);
-            return;
-        }
 
-        for (const e of events) {
-            const card = document.createElement("div");
-            card.className = "event-card";
+// =====================
+// 読み込み
+// =====================
 
-            const h3 = document.createElement("h3");
-            h3.textContent = e.title ?? "";
+async function load() {
 
-            const img = document.createElement("img");
-            img.src = e.image_url ?? "";
-            img.alt = "イベント画像";
-            img.addEventListener("click", () => openModal(e.image_url, e.title, e.description));
+    const res = await fetch(
+        API_URL,
+        { cache: "no-store" }
+    );
 
-            const p = document.createElement("p");
-            p.innerHTML = "";
-            for (const line of lines(e.description)) {
-                p.append(document.createTextNode(line));
-                p.append(document.createElement("br"));
+    const events = await res.json();
+
+    grid.innerHTML = "";
+
+
+    if (!events || events.length === 0) {
+
+        grid.innerHTML =
+            `<p class="no-event">
+            現在イベントはありません
+            </p>`;
+
+        return;
+    }
+
+
+    for (const e of events) {
+
+        const card =
+            document.createElement("div");
+
+        card.className = "event-card";
+
+
+        const h3 =
+            document.createElement("h3");
+
+        h3.textContent =
+            e.title ?? "";
+
+
+        const imgBox =
+            document.createElement("div");
+
+        imgBox.className =
+            "practice-images";
+
+
+        if (e.images) {
+
+            for (const img of e.images) {
+
+                const im =
+                    document.createElement("img");
+
+                im.src = img;
+
+                im.addEventListener(
+                    "click",
+                    () => openModal(
+                        img,
+                        e.title,
+                        e.description
+                    )
+                );
+
+                imgBox.appendChild(im);
+
             }
 
-            const small = document.createElement("small");
-            small.textContent = `投稿日：${e.created_at ?? ""}`;
-
-            card.append(h3, img, p, small);
-            grid.appendChild(card);
         }
-    } catch (err) {
-        console.error(err);
-        grid.innerHTML = `<p class="no-event">読み込みに失敗しました。</p>`;
+
+
+        const p =
+            document.createElement("p");
+
+        for (const line of lines(e.description)) {
+
+            p.append(line);
+
+            p.append(
+                document.createElement("br")
+            );
+
+        }
+
+
+        const small =
+            document.createElement("small");
+
+        small.textContent =
+            `投稿日：${e.created_at ?? ""}`;
+
+
+        card.append(
+            h3,
+            imgBox,
+            p,
+            small
+        );
+
+        grid.appendChild(card);
+
     }
+
 }
 
-loadEvents();
+
+load();

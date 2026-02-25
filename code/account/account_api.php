@@ -141,7 +141,7 @@ try {
             JOIN roles r ON u.role_id = r.id
             WHERE u.role_id <> 1 
             AND u.role_id  <> 2
-            ORDER BY u.role_id;
+            ORDER BY r.display_order;
         ");
     } else {
         // SYSTEMは全員取得
@@ -161,7 +161,7 @@ try {
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // 自分の権限で「変更先の候補」
-    $selectableIds = ($myRole === 1) ? [2, 3, 4] : [3, 4];
+    $selectableIds = ($myRole === 1) ? [2, 3, 4, 5] : [3, 4, 5];
 
     // フロント用フラグ付与
     foreach ($users as &$u) {

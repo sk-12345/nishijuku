@@ -4,13 +4,14 @@ USE nishijuku;
 DROP TABLE IF EXISTS roles;
 
 -- roles テーブル作成
-create table nishijuku.`roles` (
-  id int(11) not null comment '権限ID'
-  , role_name varchar(20) not null comment '権限名'
-  , description varchar(50) comment '権限説明'
-  , primary key (id)
+CREATE TABLE nishijuku.roles (
+  id INT(11) NOT NULL COMMENT '権限ID',
+  display_order INT(5) NOT NULL COMMENT '表示順',
+  role_name VARCHAR(20) NOT NULL COMMENT '権限名',
+  description VARCHAR(50) COMMENT '権限説明',
+  PRIMARY KEY (id)
 )
-  comment='権限'
-  engine InnoDB
-  row_format DYNAMIC
-  collate utf8mb4_general_ci
+ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC
+COLLATE=utf8mb4_general_ci
+COMMENT='権限';
