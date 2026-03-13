@@ -1,6 +1,7 @@
 const API_URL = "practice_api.php";
 
 const grid = document.getElementById("practiceGrid");
+
 const modal = document.getElementById("modal");
 const modalTitle = document.getElementById("modal-title");
 const modalImg = document.getElementById("modal-img");
@@ -13,31 +14,26 @@ function lines(s) {
 }
 
 
-// モーダル表示
-function openModal(imgSrc, title, desc) {
+function openModal(img, title, desc) {
 
     modal.style.display = "flex";
 
     modalTitle.textContent = title ?? "";
 
-    modalImg.src = imgSrc ?? "";
+    modalImg.src = img ?? "";
 
     modalText.innerHTML = "";
 
     for (const line of lines(desc)) {
 
-        modalText.append(
-            document.createTextNode(line)
-        );
+        modalText.append(line);
+        modalText.append(document.createElement("br"));
 
-        modalText.append(
-            document.createElement("br")
-        );
     }
+
 }
 
 
-// 閉じる
 function closeModal() {
     modal.style.display = "none";
 }
@@ -51,17 +47,11 @@ modalClose.addEventListener("click", closeModal);
 
 
 
-// =====================
-// 読み込み
-// =====================
-async function loadpractices() {
+async function loadPractices() {
 
     try {
 
-        const res = await fetch(
-            API_URL,
-            { cache: "no-store" }
-        );
+        const res = await fetch(API_URL, { cache: "no-store" });
 
         if (!res.ok) throw new Error();
 
@@ -69,97 +59,79 @@ async function loadpractices() {
 
         grid.innerHTML = "";
 
-
         if (!practices || practices.length === 0) {
 
             grid.innerHTML =
                 `<p class="no-practice">
-            現在、公開中の投稿はありません。
-            </p>`;
+現在、公開中の投稿はありません
+</p>`;
 
             return;
-        }
 
+        }
 
 
         for (const e of practices) {
 
             const card = document.createElement("div");
-
             card.className = "practice-card";
 
 
-            // タイトル
             const h3 = document.createElement("h3");
-
             h3.textContent = e.title ?? "";
 
 
-
-            // 複数画像
-            const imgBox =
-                document.createElement("div");
-
-            imgBox.className =
-                "practice-images";
+            const imgBox = document.createElement("div");
+            imgBox.className = "practice-images";
 
 
             if (e.images) {
 
-                for (const imgUrl of e.images) {
+                for (const img of e.images) {
 
-                    const img =
-                        document.createElement("img");
-
-                    img.src = imgUrl;
-
-                    img.alt = "練習画像";
+                    const box = document.createElement("div");
+                    box.className = "photo-box";
 
 
-                    img.addEventListener(
+                    const image = document.createElement("img");
+                    image.src = img.image;
+
+
+                    image.addEventListener(
                         "click",
-                        () => openModal(
-                            imgUrl,
-                            e.title,
-                            e.description
-                        )
+                        () => openModal(img.image, e.title, e.description)
                     );
 
-                    imgBox.appendChild(img);
+
+                    const comment = document.createElement("p");
+                    comment.className = "photo-comment";
+                    comment.textContent = img.comment ?? "";
+
+
+                    box.append(image, comment);
+
+                    imgBox.appendChild(box);
+
                 }
+
             }
 
 
-
-            // 説明
             const p = document.createElement("p");
 
             for (const line of lines(e.description)) {
 
-                p.append(
-                    document.createTextNode(line)
-                );
+                p.append(line);
+                p.append(document.createElement("br"));
 
-                p.append(
-                    document.createElement("br")
-                );
             }
 
 
-            // 日付
             const small = document.createElement("small");
-
-            small.textContent =
-                `投稿日：${e.created_at ?? ""}`;
+            small.textContent = `投稿日：${e.created_at ?? ""}`;
 
 
-
-            card.append(
-                h3,
-                imgBox,
-                p,
-                small
-            );
+            card.append(h3, imgBox, p, small);
 
             grid.appendChild(card);
 
@@ -172,12 +144,11 @@ async function loadpractices() {
 
         grid.innerHTML =
             `<p class="no-practice">
-        読み込みに失敗しました
-        </p>`;
+読み込みに失敗しました
+</p>`;
 
     }
 
 }
 
-
-loadpractices();
+loadPractices();

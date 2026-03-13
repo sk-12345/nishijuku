@@ -5,152 +5,167 @@ const postForm = document.getElementById("postForm");
 const postMsg = document.getElementById("postMsg");
 const grid = document.getElementById("eventGrid");
 
+const imageInput = document.getElementById("imageInput");
+const commentArea = document.getElementById("imageCommentArea");
+
+
+/* ======================
+   写真コメント入力生成
+====================== */
+
+imageInput.addEventListener("change", () => {
+
+    commentArea.innerHTML = "";
+
+    const files = imageInput.files;
+
+    for (let i = 0; i < files.length; i++) {
+
+        const div = document.createElement("div");
+
+        div.innerHTML = `
+<label>写真${i + 1} コメント</label>
+<textarea name="image_comments[]" rows="2"></textarea>
+`;
+
+        commentArea.appendChild(div);
+
+    }
+
+});
+
+
+/* ======================
+   XSS対策
+====================== */
 
 function escapeHtml(str) {
+
     return String(str ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll(">", "&gt;");
+
 }
 
 
-// ======================
-// 描画
-// ======================
+/* ======================
+   イベント描画
+====================== */
 
 function renderEvents(events, canDelete) {
 
     if (!events || events.length === 0) {
 
-        grid.innerHTML =
-            `<p class="no-event">
-        イベントがありません。
-        </p>`;
+        grid.innerHTML = `
+<p class="no-event">
+イベントはまだありません
+</p>`;
 
         return;
-    }
 
+    }
 
 
     grid.innerHTML = events.map(e => {
 
-
-        // 複数画像
         let imagesHTML = "";
 
         if (e.images && e.images.length > 0) {
 
-            imagesHTML =
-                `<div class="practice-images">
+            imagesHTML = `
+<div class="practice-images">
 
-            ${e.images.map(img => `
-                <img src="${escapeHtml(img)}">
-                `).join("")
-                }
+${e.images.map(img => `
 
-            </div>`;
+<div class="photo-box">
+
+<img src="${escapeHtml(img.image)}">
+
+<p class="photo-comment">
+${escapeHtml(img.comment ?? "")}
+</p>
+
+</div>
+
+`).join("")}
+
+</div>`;
+
         }
 
 
+        const delBtn = canDelete ?
 
-        const delForm = canDelete ? `
-
-        <form data-delete-form
-        data-id="${escapeHtml(e.id)}">
-
-        <button
-        type="submit"
-        class="delete-btn">
-
-        削除
-
-        </button>
-
-        </form>
-
-        `: "";
-
+            `<form data-delete-form data-id="${e.id}">
+<button type="submit" class="delete-btn">
+削除
+</button>
+</form>` : "";
 
 
         return `
 
-        <div class="practice-card">
+<div class="event-card">
 
-        <h3>${escapeHtml(e.title)}</h3>
+<h3>${escapeHtml(e.title)}</h3>
 
-        ${imagesHTML}
+${imagesHTML}
 
-        <p>
+<div class="event-description">
+${escapeHtml(e.description).replaceAll("\n", "<br>")}
+</div>
 
-        ${escapeHtml(e.description)
-                .replaceAll("\n", "<br>")}
+<small>
+投稿日：${e.created_at ?? ""}
+</small>
 
-        </p>
+${delBtn}
 
-        <small>
+</div>
 
-        投稿日：
-        ${escapeHtml(e.created_at)}
-
-        </small>
-
-        ${delForm}
-
-        </div>
-
-        `;
+`;
 
     }).join("");
 
 
+    /* ======================
+       削除処理
+    ====================== */
 
-    // 削除処理
     if (canDelete) {
 
-        document.querySelectorAll(
-            "[data-delete-form]"
-        ).forEach(form => {
+        document.querySelectorAll("[data-delete-form]").forEach(form => {
 
-            form.addEventListener(
-                "submit",
-                async ev => {
+            form.addEventListener("submit", async ev => {
 
-                    ev.preventDefault();
+                ev.preventDefault();
 
-                    const id =
-                        form.getAttribute("data-id");
+                const id = form.getAttribute("data-id");
 
-                    if (!confirm("削除しますか？"))
-                        return;
+                if (!confirm("削除しますか？")) return;
 
+                const fd = new FormData();
 
-                    const fd = new FormData();
+                fd.append("action", "delete");
+                fd.append("delete_id", id);
 
-                    fd.append("action", "delete");
-                    fd.append("delete_id", id);
-
-
-                    const res = await fetch(
-                        API_URL,
-                        {
-                            method: "POST",
-                            body: fd
-                        });
-
-
-                    if (!res.ok) {
-
-                        alert("削除に失敗しました");
-
-                        return;
-                    }
-
-
-                    await load();
-
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    body: fd
                 });
+
+                if (!res.ok) {
+
+                    alert("削除に失敗しました");
+
+                    return;
+
+                }
+
+                await load();
+
+            });
 
         });
 
@@ -159,96 +174,91 @@ function renderEvents(events, canDelete) {
 }
 
 
-
-// ======================
-// 読み込み
-// ======================
+/* ======================
+   読み込み
+====================== */
 
 async function load() {
 
-    const res = await fetch(
-        API_URL,
-        { cache: "no-store" }
-    );
+    try {
 
+        const res = await fetch(API_URL, {
+            cache: "no-store"
+        });
 
-    if (res.status === 401) {
+        if (!res.ok) throw new Error();
 
-        location.href =
-            "../login/login.php";
+        const data = await res.json();
 
-        return;
-    }
+        postArea.style.display = data.me?.can_post
+            ? "block"
+            : "none";
 
-
-    const data = await res.json();
-
-
-    if (data.me?.can_post) {
-
-        postArea.style.display = "block";
-
-    } else {
-
-        postArea.style.display = "none";
+        renderEvents(
+            data.events,
+            data.me?.can_delete
+        );
 
     }
 
+    catch (err) {
 
-    renderEvents(
-        data.events,
-        !!data.me?.can_delete
-    );
+        console.error(err);
+
+        grid.innerHTML = `
+<p class="no-event">
+読み込みに失敗しました
+</p>`;
+
+    }
 
 }
 
 
+/* ======================
+   投稿処理
+====================== */
 
-// ======================
-// 投稿
-// ======================
+postForm?.addEventListener("submit", async ev => {
 
-postForm?.addEventListener(
-    "submit",
-    async ev => {
+    ev.preventDefault();
 
-        ev.preventDefault();
+    postMsg.textContent = "";
 
-        postMsg.textContent = "";
+    const fd = new FormData(postForm);
 
-
-        const fd = new FormData(postForm);
-
-        fd.append("action", "add");
+    fd.append("action", "add");
 
 
-        const res = await fetch(
-            API_URL,
-            {
-                method: "POST",
-                body: fd
-            }
-        );
-
-
-        if (!res.ok) {
-
-            postMsg.textContent =
-                "投稿に失敗しました";
-
-            return;
-        }
-
-
-        postForm.reset();
-
-        postMsg.textContent =
-            "投稿しました！";
-
-
-        await load();
-
+    const res = await fetch(API_URL, {
+        method: "POST",
+        body: fd
     });
 
+
+    if (!res.ok) {
+
+        postMsg.textContent = "投稿に失敗しました";
+
+        return;
+
+    }
+
+
+    postForm.reset();
+
+    commentArea.innerHTML = "";
+
+    postMsg.textContent = "投稿しました！";
+
+
+    await load();
+
+});
+
+
+/* ======================
+   初期読み込み
+====================== */
 
 load();
