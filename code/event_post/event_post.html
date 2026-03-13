@@ -7,39 +7,27 @@
     <title>イベント管理 | 西塾柔道クラブ</title>
 
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0" />
+          content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet"
-          href="event_post.css" />
+          href="event_post.css">
 
 </head>
 
-
 <body>
-
 
     <div class="event-wrapper">
 
         <h2 class="page-title">
-
             イベント管理（ログイン必須）
-
         </h2>
 
-
         <div class="back-links">
-
             <a href="../home/home.html">
-
                 ホームに戻る
-
             </a>
-
         </div>
 
-
-
-        <!-- 投稿フォーム -->
 
         <div id="postArea"
              class="form-box"
@@ -48,11 +36,8 @@
 
             <form id="postForm">
 
-
                 <label>
-
                     タイトル
-
                 </label>
 
                 <input type="text"
@@ -60,59 +45,44 @@
                        required>
 
 
-
                 <label>
-
-                    説明
-
+                    イベントコメント
                 </label>
 
 <textarea name="description"
-          rows="5"
-          required>
-
-</textarea>
-
+          rows="4"
+          required></textarea>
 
 
                 <label>
-
                     写真（複数選択可）
-
                 </label>
 
-
-                <!-- ★ここ変更 -->
                 <input type="file"
                        name="images[]"
                        accept="image/*"
                        multiple
+                       id="imageInput"
                        required>
 
+
+                <div id="imageCommentArea"></div>
 
 
                 <button type="submit"
                         class="post-btn">
-
                     投稿
-
                 </button>
-
 
             </form>
 
-
             <p id="postMsg"></p>
-
 
         </div>
 
 
-
         <h2 class="page-title">
-
             イベント一覧
-
         </h2>
 
 
@@ -123,13 +93,10 @@
 
         </div>
 
-
     </div>
 
 
-
     <script src="event_post.js"></script>
-
 
 </body>
 </html>

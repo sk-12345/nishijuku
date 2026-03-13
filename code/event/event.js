@@ -14,7 +14,6 @@ function lines(s) {
 }
 
 
-// モーダル表示
 function openModal(img, title, desc) {
 
     modal.style.display = "flex";
@@ -32,12 +31,12 @@ function openModal(img, title, desc) {
         modalText.append(
             document.createElement("br")
         );
+
     }
 
 }
 
 
-// 閉じる
 modal.addEventListener(
     "click",
     () => modal.style.display = "none"
@@ -48,11 +47,6 @@ modalClose.addEventListener(
     () => modal.style.display = "none"
 );
 
-
-
-// =====================
-// 読み込み
-// =====================
 
 async function load() {
 
@@ -65,13 +59,12 @@ async function load() {
 
     grid.innerHTML = "";
 
-
     if (!events || events.length === 0) {
 
         grid.innerHTML =
             `<p class="no-event">
-            現在イベントはありません
-            </p>`;
+現在イベントはありません
+</p>`;
 
         return;
     }
@@ -79,53 +72,58 @@ async function load() {
 
     for (const e of events) {
 
-        const card =
-            document.createElement("div");
+        const card = document.createElement("div");
 
         card.className = "event-card";
 
 
-        const h3 =
-            document.createElement("h3");
+        const h3 = document.createElement("h3");
 
-        h3.textContent =
-            e.title ?? "";
+        h3.textContent = e.title ?? "";
 
 
-        const imgBox =
-            document.createElement("div");
+        const imgBox = document.createElement("div");
 
-        imgBox.className =
-            "practice-images";
+        imgBox.className = "practice-images";
 
 
         if (e.images) {
 
             for (const img of e.images) {
 
-                const im =
-                    document.createElement("img");
+                const box = document.createElement("div");
 
-                im.src = img;
+                box.className = "photo-box";
+
+                const im = document.createElement("img");
+
+                im.src = img.image;
 
                 im.addEventListener(
                     "click",
                     () => openModal(
-                        img,
+                        img.image,
                         e.title,
-                        e.description
+                        img.comment ?? e.description
                     )
                 );
 
-                imgBox.appendChild(im);
+                const c = document.createElement("div");
+
+                c.className = "photo-comment";
+
+                c.textContent = img.comment ?? "";
+
+                box.append(im, c);
+
+                imgBox.appendChild(box);
 
             }
 
         }
 
 
-        const p =
-            document.createElement("p");
+        const p = document.createElement("p");
 
         for (const line of lines(e.description)) {
 
@@ -138,8 +136,7 @@ async function load() {
         }
 
 
-        const small =
-            document.createElement("small");
+        const small = document.createElement("small");
 
         small.textContent =
             `投稿日：${e.created_at ?? ""}`;
@@ -157,6 +154,5 @@ async function load() {
     }
 
 }
-
 
 load();

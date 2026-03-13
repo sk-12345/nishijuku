@@ -6,88 +6,61 @@
     <meta charset="UTF-8">
 
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0" />
+          content="width=device-width, initial-scale=1.0">
 
     <title>イベント一覧 | 西塾柔道クラブ</title>
 
     <link rel="stylesheet"
-          href="event.css" />
+          href="event.css">
 
 </head>
 
-
 <body>
-
 
     <div class="event-wrapper">
 
         <h2 class="page-title">
-
             イベント一覧
-
         </h2>
-
 
         <div id="eventGrid"
              class="event-grid">
 
             <p class="no-event">
-
                 読み込み中...
-
             </p>
 
         </div>
 
-
-
         <div class="back-links">
 
-            <a href="../index/index.html">
-
+            <a href="../../index.html">
                 ホームに戻る
-
             </a>
 
         </div>
 
-
     </div>
 
-
-
-    <!-- モーダル -->
 
     <div id="modal"
          class="modal">
 
         <div class="modal-content">
 
-
-            <button id="modal-close"
-                    class="modal-close">
-
-                ×
-
-            </button>
-
+            <span id="modal-close"
+                  class="modal-close">×</span>
 
             <h3 id="modal-title"></h3>
 
-
-            <!-- ★ここ追加 -->
             <img id="modal-img"
-                 class="modal-img"
-                 alt="">
-
+                 class="modal-img">
 
             <p id="modal-text"></p>
 
-
         </div>
+
     </div>
-
-
 
     <script src="event.js"></script>
 

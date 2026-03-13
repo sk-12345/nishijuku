@@ -4,7 +4,7 @@ USE nishijuku;
 DROP TABLE IF EXISTS roles;
 
 -- roles テーブル作成
-CREATE TABLE nishijuku.roles (
+CREATE TABLE roles (
   id INT(11) NOT NULL COMMENT '権限ID',
   display_order INT(5) NOT NULL COMMENT '表示順',
   role_name VARCHAR(20) NOT NULL COMMENT '権限名',
