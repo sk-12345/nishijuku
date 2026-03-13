@@ -70,6 +70,7 @@ async function loadPractices() {
 
         }
 
+
         for (const e of practices) {
 
             const card = document.createElement("div");
@@ -86,18 +87,30 @@ async function loadPractices() {
 
             if (e.images) {
 
-                for (const imgUrl of e.images) {
+                for (const img of e.images) {
 
-                    const img = document.createElement("img");
+                    const box = document.createElement("div");
+                    box.className = "photo-box";
 
-                    img.src = imgUrl;
 
-                    img.addEventListener(
+                    const image = document.createElement("img");
+                    image.src = img.image;
+
+
+                    image.addEventListener(
                         "click",
-                        () => openModal(imgUrl, e.title, e.description)
+                        () => openModal(img.image, e.title, e.description)
                     );
 
-                    imgBox.appendChild(img);
+
+                    const comment = document.createElement("p");
+                    comment.className = "photo-comment";
+                    comment.textContent = img.comment ?? "";
+
+
+                    box.append(image, comment);
+
+                    imgBox.appendChild(box);
 
                 }
 

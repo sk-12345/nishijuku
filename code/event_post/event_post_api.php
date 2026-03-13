@@ -23,7 +23,7 @@ $user_id = (int)$_SESSION['user']['id'];
 ========================= */
 
 $UPLOAD_DIR_REAL = __DIR__ . '/../../img/events/';
-$UPLOAD_DIR_URL  = '/nishijuku/img/events/';
+$UPLOAD_DIR_URL  = '/nishijuku/img/events/';   // ← 本番用
 
 if (!is_dir($UPLOAD_DIR_REAL)) {
     mkdir($UPLOAD_DIR_REAL, 0777, true);
@@ -34,7 +34,7 @@ if (!is_dir($UPLOAD_DIR_REAL)) {
    権限
 ========================= */
 
-$can_post   = in_array($role_id, [1,2,3,5]);
+$can_post   = in_array($role_id, [1,2,3,5], true);
 $can_delete = ($role_id !== 4);
 
 
@@ -53,8 +53,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === "delete") {
 
-        $id = (int)$_POST['delete_id'];
+        if(!$can_delete){
+            http_response_code(403);
+            echo json_encode(['error'=>'no_delete_permission']);
+            exit;
+        }
 
+        $id = (int)($_POST['delete_id'] ?? 0);
+
+
+        // 画像取得
         $stmt = $pdo->prepare("
             SELECT image_path
             FROM event_images
@@ -65,23 +73,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $imgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+
+        // ファイル削除
         foreach ($imgs as $img) {
 
             $file = $UPLOAD_DIR_REAL . basename($img['image_path']);
 
-            if (is_file($file)) unlink($file);
+            if (is_file($file)) {
+                unlink($file);
+            }
 
         }
 
+
+        // DB削除
         $pdo->prepare("
             DELETE FROM event_images
             WHERE event_id=?
         ")->execute([$id]);
 
+
         $pdo->prepare("
             DELETE FROM events
             WHERE id=?
         ")->execute([$id]);
+
 
         echo json_encode(['ok'=>true]);
         exit;
@@ -172,7 +188,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-
 /* =========================
    GET（イベント取得）
 ========================= */
@@ -184,7 +199,6 @@ $stmt = $pdo->query("
 ");
 
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
 
 foreach ($events as &$e) {
@@ -213,7 +227,6 @@ foreach ($events as &$e) {
 }
 
 
-
 /* =========================
    JSON返却
 ========================= */
@@ -225,4 +238,4 @@ echo json_encode([
         'can_post'=>$can_post,
         'can_delete'=>$can_delete
     ]
-]);
+], JSON_UNESCAPED_UNICODE);
