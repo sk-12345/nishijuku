@@ -1,0 +1,15 @@
+USE nishijuku;
+DROP TABLE IF EXISTS game_images;
+
+CREATE TABLE game_images (
+  id INT AUTO_INCREMENT NOT NULL COMMENT '画像ID',
+  game_id INT NOT NULL COMMENT '試合ID',
+  description TEXT COMMENT '説明',
+  image_path VARCHAR(255) COMMENT '写真パス',
+  PRIMARY KEY (id),
+  INDEX(game_id)
+)
+ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC
+COLLATE=utf8mb4_general_ci
+COMMENT='試合写真';

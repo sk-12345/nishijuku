@@ -23,6 +23,7 @@ function buildMenu({ isAdminOrSystem, isPhoto }) {
     }
 
     items.push({ href: "../practice_post/practice_post.html", text: "練習風景・投稿", extraClass: "main-card" });
+    items.push({ href: "../game_post/game_post.html", text: "試合・投稿", extraClass: "main-card" });
     items.push({ href: "../event_post/event_post.html", text: "イベント一覧・投稿", extraClass: "main-card" });
     items.push({ href: "../password/password.html", text: "パスワード変更" });
 
