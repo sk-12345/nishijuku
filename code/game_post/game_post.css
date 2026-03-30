@@ -1,0 +1,147 @@
+﻿* {
+    box-sizing: border-box;
+    font-family: "メイリオ",sans-serif;
+}
+
+body {
+    margin: 0;
+    background: linear-gradient(135deg,#0a3d62,#3c6382);
+}
+
+.game-wrapper {
+    width: 92vw;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5vw 0;
+}
+
+.page-title {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: clamp(18px,4vw,26px);
+}
+
+.form-box {
+    background: #fff;
+    padding: 5vw;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    margin-bottom: 50px;
+}
+
+    .form-box label {
+        display: block;
+        font-weight: bold;
+        margin-top: 15px;
+    }
+
+    .form-box input,
+    .form-box textarea {
+        width: 100%;
+        padding: 12px;
+        margin-top: 6px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+.post-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #0a3d62;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.game-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+}
+
+.game-card {
+    background: #fff;
+    padding: 18px;
+    border-radius: 16px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    text-align: center;
+}
+
+    .game-card h3 {
+        margin-bottom: 10px;
+    }
+
+.game-description {
+    text-align: left;
+    margin-top: 10px;
+}
+
+.game-images {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.photo-box {
+    background: #f6f6f6;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .photo-box img {
+        width: 100%;
+        max-height: 220px;
+        object-fit: contain;
+        background: #eee;
+    }
+
+.photo-comment {
+    padding: 8px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.delete-btn {
+    margin-top: 14px;
+    width: 100%;
+    padding: 10px;
+    background: #c0392b;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.back-links {
+    text-align: center;
+    margin-top: 50px;
+}
+
+    .back-links a {
+        color: #fff;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+@media screen and (min-width:700px) {
+
+    .game-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media screen and (min-width:1000px) {
+
+    .game-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .photo-box img {
+        max-height: 260px;
+    }
+}
