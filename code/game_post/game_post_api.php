@@ -14,31 +14,35 @@ $role_id = (int)$_SESSION['user']['role_id'];
 $user_id = (int)$_SESSION['user']['id'];
 $user_name = $_SESSION['user']['fullname'] ?? $_SESSION['user']['name'] ?? '';
 
-$UPLOAD_DIR_REAL = __DIR__ . '/../../img/practices/';
-$UPLOAD_DIR_URL  = '/nishijuku/img/practices/';
+$can_post   = in_array($role_id, [1, 2, 3, 5], true);
+$can_delete = in_array($role_id, [1, 2, 3, 5], true);
+
+$UPLOAD_DIR_REAL = __DIR__ . '/../../img/games/';
+$UPLOAD_DIR_URL  = '/nishijuku/img/games/';
 
 if (!is_dir($UPLOAD_DIR_REAL)) {
     mkdir($UPLOAD_DIR_REAL, 0777, true);
 }
 
-$can_post   = in_array($role_id, [1, 2, 3, 5], true);
-$can_delete = ($role_id !== 4);
-
-function savePracticeImage($file, $uploadDirReal) {
+function saveGameImage($file, $uploadDirReal) {
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return null;
     }
 
-    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $originalName = $file['name'];
+    $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
     $allow = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     if (!in_array($ext, $allow, true)) {
         return null;
     }
 
-    $filename = uniqid('practice_', true) . '.' . $ext;
+    $filename = uniqid('game_', true) . '.' . $ext;
 
-    if (!move_uploaded_file($file['tmp_name'], $uploadDirReal . $filename)) {
+    $savePath = $uploadDirReal . $filename;
+
+    if (!move_uploaded_file($file['tmp_name'], $savePath)) {
         return null;
     }
 
@@ -53,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$can_delete) {
             http_response_code(403);
-            echo json_encode(['error' => 'no_delete_permission']);
+            echo json_encode(['error' => 'permission_denied']);
             exit;
         }
 
@@ -61,8 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $stmt = $pdo->prepare("
             SELECT image_path
-            FROM practice_images
-            WHERE practice_id = ?
+            FROM game_images
+            WHERE game_id = ?
         ");
         $stmt->execute([$id]);
         $imgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -75,15 +79,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $pdo->prepare("
-            DELETE FROM practice_images
-            WHERE practice_id = ?
-        ")->execute([$id]);
-
-        $pdo->prepare("
-            DELETE FROM practices
+        $stmt = $pdo->prepare("
+            DELETE FROM games
             WHERE id = ?
-        ")->execute([$id]);
+        ");
+        $stmt->execute([$id]);
 
         echo json_encode(['ok' => true]);
         exit;
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$can_post) {
             http_response_code(403);
-            echo json_encode(['error' => 'no_post_permission']);
+            echo json_encode(['error' => 'permission_denied']);
             exit;
         }
 
@@ -112,9 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->beginTransaction();
 
         try {
+
             $stmt = $pdo->prepare("
-                INSERT INTO practices
-                    (title, description, created_by, created_at)
+                INSERT INTO games
+                    (title, description, create_by, create_at)
                 VALUES
                     (?, ?, ?, NOW())
             ");
@@ -125,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user_id
             ]);
 
-            $practice_id = $pdo->lastInsertId();
+            $game_id = $pdo->lastInsertId();
 
             if (isset($_FILES['images'])) {
 
@@ -139,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'size' => $_FILES['images']['size'][$i],
                     ];
 
-                    $filename = savePracticeImage($file, $UPLOAD_DIR_REAL);
+                    $filename = saveGameImage($file, $UPLOAD_DIR_REAL);
 
                     if ($filename === null) {
                         continue;
@@ -149,22 +150,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $order = (int)($display_orders[$i] ?? ($i + 1));
 
                     $stmt = $pdo->prepare("
-                        INSERT INTO practice_images
+                        INSERT INTO game_images
                             (
-                                practice_id,
+                                game_id,
                                 description,
                                 image_path,
-                                display_order
+                                display_order,
+                                create_by,
+                                create_at
                             )
                         VALUES
-                            (?, ?, ?, ?)
+                            (?, ?, ?, ?, ?, NOW())
                     ");
 
                     $stmt->execute([
-                        $practice_id,
+                        $game_id,
                         $comment,
                         $filename,
-                        $order
+                        $order,
+                        $user_name
                     ]);
                 }
             }
@@ -175,6 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
 
         } catch (Exception $e) {
+
             $pdo->rollBack();
 
             http_response_code(500);
@@ -190,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$can_post) {
             http_response_code(403);
-            echo json_encode(['error' => 'no_edit_permission']);
+            echo json_encode(['error' => 'permission_denied']);
             exit;
         }
 
@@ -206,6 +211,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $existing_ids = $_POST['existing_image_ids'] ?? [];
         $existing_comments = $_POST['existing_image_comments'] ?? [];
+        $existing_orders = $_POST['existing_display_orders'] ?? [];
+
         $delete_image_ids = $_POST['delete_image_ids'] ?? [];
 
         $new_comments = $_POST['new_image_comments'] ?? [];
@@ -214,8 +221,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->beginTransaction();
 
         try {
+
             $stmt = $pdo->prepare("
-                UPDATE practices
+                UPDATE games
                 SET
                     title = ?,
                     description = ?
@@ -229,13 +237,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             foreach ($delete_image_ids as $delete_image_id) {
+
                 $delete_image_id = (int)$delete_image_id;
 
                 $stmt = $pdo->prepare("
                     SELECT image_path
-                    FROM practice_images
+                    FROM game_images
                     WHERE id = ?
-                      AND practice_id = ?
+                      AND game_id = ?
                 ");
 
                 $stmt->execute([
@@ -253,9 +262,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     $stmt = $pdo->prepare("
-                        DELETE FROM practice_images
+                        DELETE FROM game_images
                         WHERE id = ?
-                          AND practice_id = ?
+                          AND game_id = ?
                     ");
 
                     $stmt->execute([
@@ -266,26 +275,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             foreach ($existing_ids as $i => $image_id) {
-                $image_id = (int)$image_id;
-                $comment = $existing_comments[$i] ?? '';
-                $order = $i + 1;
 
-                $stmt = $pdo->prepare("
-                    UPDATE practice_images
-                    SET
-                        description = ?,
-                        display_order = ?
-                    WHERE id = ?
-                      AND practice_id = ?
-                ");
+    $image_id = (int)$image_id;
+    $comment = $existing_comments[$i] ?? '';
+    $order = $i + 1;
 
-                $stmt->execute([
-                    $comment,
-                    $order,
-                    $image_id,
-                    $id
-                ]);
-            }
+    $stmt = $pdo->prepare("
+        UPDATE game_images
+        SET
+            description = ?,
+            display_order = ?
+        WHERE id = ?
+          AND game_id = ?
+    ");
+
+    $stmt->execute([
+        $comment,
+        $order,
+        $image_id,
+        $id
+    ]);
+}
 
             if (isset($_FILES['new_images'])) {
 
@@ -299,7 +309,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'size' => $_FILES['new_images']['size'][$i],
                     ];
 
-                    $filename = savePracticeImage($file, $UPLOAD_DIR_REAL);
+                    $filename = saveGameImage($file, $UPLOAD_DIR_REAL);
 
                     if ($filename === null) {
                         continue;
@@ -309,22 +319,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $order = (int)($new_orders[$i] ?? ($i + 1));
 
                     $stmt = $pdo->prepare("
-                        INSERT INTO practice_images
+                        INSERT INTO game_images
                             (
-                                practice_id,
+                                game_id,
                                 description,
                                 image_path,
-                                display_order
+                                display_order,
+                                create_by,
+                                create_at
                             )
                         VALUES
-                            (?, ?, ?, ?)
+                            (?, ?, ?, ?, ?, NOW())
                     ");
 
                     $stmt->execute([
                         $id,
                         $comment,
                         $filename,
-                        $order
+                        $order,
+                        $user_name
                     ]);
                 }
             }
@@ -335,6 +348,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
 
         } catch (Exception $e) {
+
             $pdo->rollBack();
 
             http_response_code(500);
@@ -356,15 +370,15 @@ $stmt = $pdo->query("
         id,
         title,
         description,
-        created_by,
-        DATE_FORMAT(created_at, '%Y/%m/%d %H:%i') AS created_at
-    FROM practices
-    ORDER BY created_at DESC
+        create_by,
+        DATE_FORMAT(create_at, '%Y/%m/%d %H:%i') AS create_at
+    FROM games
+    ORDER BY create_at DESC
 ");
 
-$practices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$games = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ($practices as &$e) {
+foreach ($games as &$game) {
 
     $stmt2 = $pdo->prepare("
         SELECT
@@ -372,19 +386,19 @@ foreach ($practices as &$e) {
             image_path,
             description,
             display_order
-        FROM practice_images
-        WHERE practice_id = ?
+        FROM game_images
+        WHERE game_id = ?
         ORDER BY display_order ASC, id ASC
     ");
 
-    $stmt2->execute([$e['id']]);
+    $stmt2->execute([$game['id']]);
 
     $imgs = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-    $e['images'] = [];
+    $game['images'] = [];
 
     foreach ($imgs as $img) {
-        $e['images'][] = [
+        $game['images'][] = [
             'id' => $img['id'],
             'image_path' => $img['image_path'],
             'image' => $UPLOAD_DIR_URL . $img['image_path'],
@@ -395,10 +409,10 @@ foreach ($practices as &$e) {
 }
 
 echo json_encode([
-    'practices' => $practices,
+    'games' => $games,
     'me' => [
         'role_id' => $role_id,
         'can_post' => $can_post,
         'can_delete' => $can_delete
     ]
-], JSON_UNESCAPED_UNICODE);
+]);

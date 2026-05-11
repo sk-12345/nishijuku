@@ -3,22 +3,22 @@ require_once '../db.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
-$UPLOAD_DIR_URL = '/nishijuku/img/events/';
+$UPLOAD_DIR_URL = '/nishijuku/img/games/';
 
 $stmt = $pdo->query("
     SELECT
         id,
         title,
         description,
-        created_by,
-        DATE_FORMAT(created_at, '%Y/%m/%d %H:%i') AS created_at
-    FROM events
-    ORDER BY created_at DESC
+        create_by,
+        DATE_FORMAT(create_at, '%Y/%m/%d %H:%i') AS created_at
+    FROM games
+    ORDER BY create_at DESC
 ");
 
-$events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$games = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ($events as &$e) {
+foreach ($games as &$p) {
 
     $stmt2 = $pdo->prepare("
         SELECT
@@ -26,30 +26,28 @@ foreach ($events as &$e) {
             image_path,
             description,
             display_order
-        FROM event_images
-        WHERE event_id = ?
+        FROM game_images
+        WHERE game_id = ?
         ORDER BY display_order ASC, id ASC
     ");
 
-    $stmt2->execute([$e['id']]);
+    $stmt2->execute([$p['id']]);
 
     $imgs = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-    $e['images'] = [];
+    $p['images'] = [];
 
     foreach ($imgs as $img) {
-
-        $e['images'][] = [
+        $p['images'][] = [
             'id' => $img['id'],
             'image' => $UPLOAD_DIR_URL . $img['image_path'],
             'comment' => $img['description'],
             'display_order' => $img['display_order']
         ];
-
     }
 }
 
 echo json_encode(
-    $events,
+    $games,
     JSON_UNESCAPED_UNICODE
 );

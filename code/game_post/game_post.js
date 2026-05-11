@@ -1,10 +1,8 @@
-﻿const API_URL = "practice_post_api.php";
+﻿const API_URL = "game_post_api.php";
 
 const postArea = document.getElementById("postArea");
 const postForm = document.getElementById("postForm");
-const postMsg = document.getElementById("postMsg");
-const grid = document.getElementById("practiceGrid");
-
+const grid = document.getElementById("gameGrid");
 const imageInput = document.getElementById("imageInput");
 const previewArea = document.getElementById("imagePreviewArea");
 const submitBtn = document.getElementById("submitBtn");
@@ -12,9 +10,9 @@ const editId = document.getElementById("editId");
 const cancelEditBtn = document.getElementById("cancelEditBtn");
 
 let selectedFiles = [];
-let currentPractices = [];
+let currentGames = [];
 let editMode = false;
-let editingPracticeId = null;
+let editingGameId = null;
 
 let existingImages = [];
 let deleteImageIds = [];
@@ -50,7 +48,7 @@ function renderPreview() {
         div.innerHTML = `
             <div class="preview-row">
                 <div class="preview-box">
-                    <img src="${url}">
+                    <img src="${url}" alt="写真${index + 1}">
                 </div>
 
                 <div class="order-area">
@@ -85,6 +83,7 @@ function renderEditImages() {
     previewArea.innerHTML = "";
 
     existingImages.forEach((img, index) => {
+
         img.display_order = index + 1;
 
         const div = document.createElement("div");
@@ -107,8 +106,13 @@ function renderEditImages() {
                            value="${index + 1}"
                            min="1">
 
-                    <button type="button" class="order-btn" onclick="moveExistingDown(${index})">↓</button>
-                    <button type="button" class="order-btn" onclick="moveExistingUp(${index})">↑</button>
+                    <button type="button"
+                            class="order-btn"
+                            onclick="moveExistingDown(${index})">↓</button>
+
+                    <button type="button"
+                            class="order-btn"
+                            onclick="moveExistingUp(${index})">↑</button>
 
                     <br>
 
@@ -128,6 +132,7 @@ function renderEditImages() {
     });
 
     selectedFiles.forEach((file, index) => {
+
         const url = URL.createObjectURL(file);
         const no = existingImages.length + index + 1;
 
@@ -147,8 +152,13 @@ function renderEditImages() {
                            value="${no}"
                            min="1">
 
-                    <button type="button" class="order-btn" onclick="moveNewDown(${index})">↓</button>
-                    <button type="button" class="order-btn" onclick="moveNewUp(${index})">↑</button>
+                    <button type="button"
+                            class="order-btn"
+                            onclick="moveNewDown(${index})">↓</button>
+
+                    <button type="button"
+                            class="order-btn"
+                            onclick="moveNewUp(${index})">↑</button>
 
                     <br>
 
@@ -198,7 +208,11 @@ function moveNewUp(index) {
     [selectedFiles[index - 1], selectedFiles[index]] =
         [selectedFiles[index], selectedFiles[index - 1]];
 
-    editMode ? renderEditImages() : renderPreview();
+    if (editMode) {
+        renderEditImages();
+    } else {
+        renderPreview();
+    }
 }
 
 function moveNewDown(index) {
@@ -207,29 +221,38 @@ function moveNewDown(index) {
     [selectedFiles[index + 1], selectedFiles[index]] =
         [selectedFiles[index], selectedFiles[index + 1]];
 
-    editMode ? renderEditImages() : renderPreview();
+    if (editMode) {
+        renderEditImages();
+    } else {
+        renderPreview();
+    }
 }
 
 function removeNewImage(index) {
     selectedFiles.splice(index, 1);
-    editMode ? renderEditImages() : renderPreview();
+
+    if (editMode) {
+        renderEditImages();
+    } else {
+        renderPreview();
+    }
 }
 
 function startEdit(id) {
-    const practice = currentPractices.find(e => Number(e.id) === Number(id));
+    const game = currentGames.find(g => Number(g.id) === Number(id));
 
-    if (!practice) {
+    if (!game) {
         alert("編集データが見つかりません。");
         return;
     }
 
     editMode = true;
-    editingPracticeId = practice.id;
+    editingGameId = game.id;
 
-    postForm.title.value = practice.title;
-    postForm.description.value = practice.description;
+    postForm.title.value = game.title;
+    postForm.description.value = game.description;
 
-    existingImages = (practice.images ?? []).map(img => ({
+    existingImages = (game.images ?? []).map(img => ({
         id: img.id,
         image: img.image,
         image_path: img.image_path,
@@ -240,7 +263,7 @@ function startEdit(id) {
     deleteImageIds = [];
     selectedFiles = [];
 
-    editId.value = practice.id;
+    editId.value = game.id;
     submitBtn.textContent = "編集";
     cancelEditBtn.style.display = "block";
     imageInput.required = false;
@@ -256,7 +279,7 @@ function startEdit(id) {
 
 function resetFormMode() {
     editMode = false;
-    editingPracticeId = null;
+    editingGameId = null;
 
     selectedFiles = [];
     existingImages = [];
@@ -277,122 +300,102 @@ cancelEditBtn.addEventListener("click", () => {
     resetFormMode();
 });
 
-function renderPractices(practices, canDelete) {
-    if (!practices || practices.length === 0) {
-        grid.innerHTML = `<p class="no-practice">練習はまだありません</p>`;
+function renderGames(games, canDelete) {
+    if (!games || games.length === 0) {
+        grid.innerHTML = "<p>投稿はまだありません。</p>";
         return;
     }
 
-    grid.innerHTML = practices.map(e => {
+    grid.innerHTML = games.map(game => {
         const imagesHTML = `
-<div class="practice-images">
-${(e.images ?? []).map(img => `
-<div class="photo-box">
-<img src="${escapeHtml(img.image)}">
-<p class="photo-comment">
-${escapeHtml(img.comment ?? "")}
-</p>
-</div>
-`).join("")}
-</div>`;
+            <div class="game-images">
+                ${(game.images ?? []).map(img => `
+                    <div class="photo-box">
+                        <img src="${escapeHtml(img.image)}">
+                        <p class="photo-comment">
+                            ${escapeHtml(img.comment)}
+                        </p>
+                    </div>
+                `).join("")}
+            </div>
+        `;
 
         const deleteBtn = canDelete ? `
-<form data-delete-form data-id="${e.id}">
-<button type="submit" class="delete-btn">
-削除
-</button>
-</form>` : "";
+            <form data-delete-form data-id="${game.id}">
+                <button type="submit" class="delete-btn">消去</button>
+            </form>
+        ` : "";
 
         return `
-<div class="practice-card">
+            <div class="game-card">
+                <h3>${escapeHtml(game.title)}</h3>
 
-<h3>${escapeHtml(e.title)}</h3>
+                <div class="game-description">
+                    ${escapeHtml(game.description).replaceAll("\n", "<br>")}
+                </div>
 
-${imagesHTML}
+                ${imagesHTML}
 
-<div class="practice-description">
-${escapeHtml(e.description).replaceAll("\n", "<br>")}
-</div>
+                <small>投稿日：${escapeHtml(game.create_at)}</small>
 
-<small>
-投稿日：${e.created_at ?? ""}
-</small>
+                <button type="button"
+                        class="edit-btn"
+                        onclick="startEdit(${game.id})">
+                    編集
+                </button>
 
-<button type="button"
-        class="edit-btn"
-        onclick="startEdit(${e.id})">
-編集
-</button>
-
-${deleteBtn}
-
-</div>`;
+                ${deleteBtn}
+            </div>
+        `;
     }).join("");
 
-    if (canDelete) {
-        document.querySelectorAll("[data-delete-form]").forEach(form => {
-            form.addEventListener("submit", async ev => {
-                ev.preventDefault();
+    document.querySelectorAll("[data-delete-form]").forEach(form => {
+        form.addEventListener("submit", async ev => {
+            ev.preventDefault();
 
-                if (!confirm("削除しますか？")) return;
+            if (!confirm("消去しますか？")) return;
 
-                const fd = new FormData();
-                fd.append("action", "delete");
-                fd.append("delete_id", form.dataset.id);
+            const fd = new FormData();
+            fd.append("action", "delete");
+            fd.append("delete_id", form.dataset.id);
 
-                const res = await fetch(API_URL, {
-                    method: "POST",
-                    body: fd
-                });
-
-                if (!res.ok) {
-                    alert("削除に失敗しました");
-                    return;
-                }
-
-                resetFormMode();
-                await load();
+            await fetch(API_URL, {
+                method: "POST",
+                body: fd
             });
+
+            resetFormMode();
+            load();
         });
-    }
+    });
 }
 
 async function load() {
-    try {
-        const res = await fetch(API_URL, {
-            cache: "no-store"
-        });
+    const res = await fetch(API_URL);
 
-        if (!res.ok) throw new Error();
-
-        const data = await res.json();
-
-        currentPractices = data.practices ?? [];
-
-        postArea.style.display = data.me?.can_post ? "block" : "none";
-
-        renderPractices(
-            currentPractices,
-            data.me?.can_delete
-        );
-
-    } catch (err) {
-        console.error(err);
-
-        grid.innerHTML = `<p class="no-practice">読み込みに失敗しました</p>`;
+    if (res.status === 401) {
+        postArea.style.display = "none";
+        grid.innerHTML = "<p>ログインしてください。</p>";
+        return;
     }
+
+    const data = await res.json();
+
+    currentGames = data.games ?? [];
+
+    postArea.style.display = data.me?.can_post ? "block" : "none";
+
+    renderGames(currentGames, data.me?.can_delete);
 }
 
 postForm.addEventListener("submit", async ev => {
     ev.preventDefault();
 
-    postMsg.textContent = "";
-
     const fd = new FormData(postForm);
 
     if (editMode) {
         fd.append("action", "edit");
-        fd.append("id", editingPracticeId);
+        fd.append("id", editingGameId);
 
         deleteImageIds.forEach(id => {
             fd.append("delete_image_ids[]", id);
@@ -417,16 +420,14 @@ postForm.addEventListener("submit", async ev => {
 
     const data = await res.json();
 
-    if (!res.ok || !data.ok) {
-        postMsg.textContent = "保存に失敗しました";
+    if (!data.ok) {
+        alert("保存に失敗しました。");
         console.log(data);
         return;
     }
 
-    postMsg.textContent = editMode ? "編集しました！" : "投稿しました！";
-
     resetFormMode();
-    await load();
+    load();
 });
 
 load();

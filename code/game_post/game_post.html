@@ -2,16 +2,16 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>イベント管理 | 西塾柔道クラブ</title>
+    <title>試合投稿 | 西塾柔道クラブ</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="event_post.css">
+    <link rel="stylesheet" href="game_post.css">
 </head>
 
 <body>
 
-    <div class="event-wrapper">
+    <div class="game-wrapper">
 
-        <h2 class="page-title">イベント管理（ログイン必須）</h2>
+        <h2 class="page-title">試合投稿（ログイン必須）</h2>
 
         <div class="back-links">
             <a href="../home/home.html">ホームに戻る</a>
@@ -21,12 +21,12 @@
 
             <form id="postForm">
 
-                <input type="hidden" id="editId" name="edit_id">
+                <input type="hidden" name="edit_id" id="editId">
 
                 <label>タイトル</label>
                 <input type="text" name="title" required>
 
-                <label>イベントコメント</label>
+                <label>コメント</label>
                 <textarea name="description" rows="4" required></textarea>
 
                 <label>写真（複数選択可）</label>
@@ -39,7 +39,9 @@
 
                 <div id="imagePreviewArea"></div>
 
-                <button type="submit" class="post-btn" id="submitBtn">
+                <button type="submit"
+                        class="post-btn"
+                        id="submitBtn">
                     投稿
                 </button>
 
@@ -56,15 +58,15 @@
 
         </div>
 
-        <h2 class="page-title">イベント一覧</h2>
+        <h2 class="page-title">試合一覧</h2>
 
-        <div id="eventGrid" class="event-grid">
+        <div id="gameGrid" class="game-grid">
             <p>読み込み中...</p>
         </div>
 
     </div>
 
-    <script src="event_post.js"></script>
+    <script src="game_post.js"></script>
 
 </body>
 </html>
