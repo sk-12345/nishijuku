@@ -5,26 +5,30 @@ header('Content-Type: application/json; charset=UTF-8');
 
 $UPLOAD_DIR_URL = '/nishijuku/img/practices/';
 
-
-/* 投稿取得 */
-
 $stmt = $pdo->query("
-SELECT *
-FROM practices
-ORDER BY created_at DESC
+    SELECT
+        id,
+        title,
+        description,
+        created_by,
+        DATE_FORMAT(created_at, '%Y/%m/%d %H:%i') AS created_at
+    FROM practices
+    ORDER BY created_at DESC
 ");
 
 $practices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-
-/* 各投稿の画像取得 */
-
 foreach ($practices as &$p) {
 
     $stmt2 = $pdo->prepare("
-        SELECT image_path, description
+        SELECT
+            id,
+            image_path,
+            description,
+            display_order
         FROM practice_images
         WHERE practice_id = ?
+        ORDER BY display_order ASC, id ASC
     ");
 
     $stmt2->execute([$p['id']]);
@@ -34,16 +38,14 @@ foreach ($practices as &$p) {
     $p['images'] = [];
 
     foreach ($imgs as $img) {
-
         $p['images'][] = [
-            'image'   => $UPLOAD_DIR_URL . $img['image_path'],
-            'comment' => $img['description']
+            'id' => $img['id'],
+            'image' => $UPLOAD_DIR_URL . $img['image_path'],
+            'comment' => $img['description'],
+            'display_order' => $img['display_order']
         ];
-
     }
-
 }
-
 
 echo json_encode(
     $practices,
