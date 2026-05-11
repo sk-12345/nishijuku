@@ -1,63 +1,35 @@
 ﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
-
     <meta charset="UTF-8">
-
     <title>イベント管理 | 西塾柔道クラブ</title>
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet"
-          href="event_post.css">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="event_post.css">
 </head>
 
 <body>
 
     <div class="event-wrapper">
 
-        <h2 class="page-title">
-            イベント管理（ログイン必須）
-        </h2>
+        <h2 class="page-title">イベント管理（ログイン必須）</h2>
 
         <div class="back-links">
-            <a href="../home/home.html">
-                ホームに戻る
-            </a>
+            <a href="../home/home.html">ホームに戻る</a>
         </div>
 
-
-        <div id="postArea"
-             class="form-box"
-             style="display:none;">
-
+        <div id="postArea" class="form-box" style="display:none;">
 
             <form id="postForm">
 
-                <label>
-                    タイトル
-                </label>
+                <input type="hidden" id="editId" name="edit_id">
 
-                <input type="text"
-                       name="title"
-                       required>
+                <label>タイトル</label>
+                <input type="text" name="title" required>
 
+                <label>イベントコメント</label>
+                <textarea name="description" rows="4" required></textarea>
 
-                <label>
-                    イベントコメント
-                </label>
-
-<textarea name="description"
-          rows="4"
-          required></textarea>
-
-
-                <label>
-                    写真（複数選択可）
-                </label>
-
+                <label>写真（複数選択可）</label>
                 <input type="file"
                        name="images[]"
                        accept="image/*"
@@ -65,13 +37,17 @@
                        id="imageInput"
                        required>
 
+                <div id="imagePreviewArea"></div>
 
-                <div id="imageCommentArea"></div>
-
-
-                <button type="submit"
-                        class="post-btn">
+                <button type="submit" class="post-btn" id="submitBtn">
                     投稿
+                </button>
+
+                <button type="button"
+                        class="cancel-btn"
+                        id="cancelEditBtn"
+                        style="display:none;">
+                    編集キャンセル
                 </button>
 
             </form>
@@ -80,21 +56,13 @@
 
         </div>
 
+        <h2 class="page-title">イベント一覧</h2>
 
-        <h2 class="page-title">
-            イベント一覧
-        </h2>
-
-
-        <div id="eventGrid"
-             class="event-grid">
-
+        <div id="eventGrid" class="event-grid">
             <p>読み込み中...</p>
-
         </div>
 
     </div>
-
 
     <script src="event_post.js"></script>
 
