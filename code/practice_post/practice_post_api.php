@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $pdo->prepare("
                 INSERT INTO practices
-                    (title, description, created_by, created_at)
+                    (title, description, create_by, create_at)
                 VALUES
                     (?, ?, ?, NOW())
             ");
@@ -356,10 +356,10 @@ $stmt = $pdo->query("
         id,
         title,
         description,
-        created_by,
-        DATE_FORMAT(created_at, '%Y/%m/%d %H:%i') AS created_at
+        create_by,
+        DATE_FORMAT(create_at, '%Y/%m/%d %H:%i') AS create_at
     FROM practices
-    ORDER BY created_at DESC
+    ORDER BY create_at DESC
 ");
 
 $practices = $stmt->fetchAll(PDO::FETCH_ASSOC);

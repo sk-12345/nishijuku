@@ -311,11 +311,11 @@ ${escapeHtml(img.comment ?? "")}
 
 <h3>${escapeHtml(e.title)}</h3>
 
-${imagesHTML}
-
 <div class="event-description">
 ${escapeHtml(e.description).replaceAll("\n", "<br>")}
 </div>
+
+${imagesHTML}
 
 <small>
 投稿日：${e.created_at ?? ""}

@@ -131,7 +131,7 @@ async function loadgames() {
             small.textContent = `投稿日：${e.created_at ?? ""}`;
 
 
-            card.append(h3, imgBox, p, small);
+            card.append(h3, p, imgBox, small);
 
             grid.appendChild(card);
 
