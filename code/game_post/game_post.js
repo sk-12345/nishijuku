@@ -393,6 +393,10 @@ postForm.addEventListener("submit", async ev => {
 
     const fd = new FormData(postForm);
 
+    // input[type=file] から自動で入った画像を削除（二重投稿防止）
+    fd.delete("images[]");
+    fd.delete("new_images[]");
+
     if (editMode) {
         fd.append("action", "edit");
         fd.append("id", editingGameId);
@@ -426,8 +430,8 @@ postForm.addEventListener("submit", async ev => {
         return;
     }
 
-    resetFormMode();
-    load();
+    resetFormMode();   // 投稿後に入力エリアをリセット
+    await load();
 });
 
 load();
