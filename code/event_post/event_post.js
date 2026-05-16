@@ -396,6 +396,10 @@ postForm?.addEventListener("submit", async ev => {
 
     const fd = new FormData(postForm);
 
+    // input[type=file] から自動で入った画像を削除（二重投稿防止）
+    fd.delete("images[]");
+    fd.delete("new_images[]");
+
     if (editMode) {
         fd.append("action", "edit");
         fd.append("id", editingEventId);
@@ -429,9 +433,11 @@ postForm?.addEventListener("submit", async ev => {
         return;
     }
 
-    postMsg.textContent = editMode ? "編集しました！" : "投稿しました！";
+    const msg = editMode ? "編集しました！" : "投稿しました！";
 
     resetFormMode();
+    postMsg.textContent = msg;
+
     await load();
 });
 
