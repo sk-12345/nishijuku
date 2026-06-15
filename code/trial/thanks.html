@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>応募ありがとうございました | 西塾柔道クラブ</title>
+    <title>応募ありがとうございました | 初柔会西塾</title>
     <link rel="stylesheet" href="trial.css" />
 </head>
 <body>
@@ -23,7 +23,7 @@
             </p>
 
             <div class="actions" style="margin-top:16px;">
-                <a class="btn" href="../index/index.html" style="display:inline-block; text-decoration:none;">トップへ</a>
+                <a class="btn" href="../../index.html" style="display:inline-block; text-decoration:none;">トップへ</a>
                 <a class="btn ghost" href="trial.html" style="display:inline-block; text-decoration:none;">もう一度応募する</a>
             </div>
         </main>
@@ -42,8 +42,11 @@
                 "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;", "&": "&amp;"
             }[c]));
             document.getElementById("thanksText").innerHTML =
-                `${safe} 様<br>応募を受け付けました。<br>担当よりご連絡いたします。`;
-        }
+                `${safe} 様<br>
+                    応募を受け付けました。<br>
+                    担当よりご連絡いたします。<br>
+                    ※メールでの返信となるため、迷惑メールフォルダに振り分けられる可能性があります。`;
+                }
     </script>
 </body>
 </html>

@@ -21,7 +21,7 @@ $config = require __DIR__ . '/config.php';
 $GMAIL_USER = (string)($config['GMAIL_USER'] ?? '');
 $GMAIL_APP  = (string)($config['GMAIL_APP'] ?? '');
 $TO_MAIL    = $config['TO_MAIL'] ?? []; // ✅ string でも array でもOK
-$FROM_NAME  = (string)($config['FROM_NAME'] ?? '西塾柔道クラブ');
+$FROM_NAME  = (string)($config['FROM_NAME'] ?? '初柔会西塾');
 
 if ($GMAIL_USER === '' || $GMAIL_APP === '') {
   jexit(['ok' => false, 'error' => 'config_missing'], 500);
@@ -151,7 +151,7 @@ if (count($toList) === 0) {
 $subject = '【西塾体験応募】' . $guardian . ' 様（' . count($clean) . '名）';
 
 $body =
-"西塾柔道クラブ 体験応募フォーム\n".
+"初柔会西塾 体験応募フォーム\n".
 "----------------------------------\n".
 "【保護者情報】\n".
 "保護者氏名: {$guardian}\n".
