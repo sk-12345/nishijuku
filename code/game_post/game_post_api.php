@@ -80,6 +80,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $stmt = $pdo->prepare("
+            DELETE FROM game_images
+            WHERE game_id = ?
+        ");
+        $stmt->execute([$id]);
+
+        $stmt = $pdo->prepare("
             DELETE FROM games
             WHERE id = ?
         ");
