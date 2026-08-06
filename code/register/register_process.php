@@ -42,12 +42,17 @@ if ($stmt->fetchColumn() > 0) {
 
 /* 登録 */
 $hash = password_hash($password, PASSWORD_DEFAULT);
+$auditUser = (string)($_SESSION['user']['login_id'] ?? $_SESSION['user']['id'] ?? 'system');
 
 $stmt = $pdo->prepare("
-INSERT INTO users (login_id, password_hash, name, role_id, created_at, updated_at)
-VALUES (?, ?, ?, ?, NOW(), NOW())
+INSERT INTO users (
+    login_id, password_hash, name, role_id,
+    append_datetime, append_user_id, append_func_id,
+    update_datetime, update_user_id, update_func_id, lock_timestamp
+)
+VALUES (?, ?, ?, ?, NOW(), ?, 'register', NOW(), ?, 'register', CURRENT_TIMESTAMP)
 ");
-$stmt->execute([$login_id, $hash, $name, $role_id]);
+$stmt->execute([$login_id, $hash, $name, $role_id, $auditUser, $auditUser]);
 
 header("Location: ../home/home.html");
 exit;

@@ -2,436 +2,174 @@
 
 const postArea = document.getElementById("postArea");
 const postForm = document.getElementById("postForm");
+const postMsg = document.getElementById("postMsg");
 const grid = document.getElementById("gameGrid");
+
 const imageInput = document.getElementById("imageInput");
-const previewArea = document.getElementById("imagePreviewArea");
-const submitBtn = document.getElementById("submitBtn");
-const editId = document.getElementById("editId");
-const cancelEditBtn = document.getElementById("cancelEditBtn");
+const commentArea = document.getElementById("imageCommentArea");
 
-let selectedFiles = [];
-let currentGames = [];
-let editMode = false;
-let editingGameId = null;
 
-let existingImages = [];
-let deleteImageIds = [];
+const photoSelector = setupPhotoSelector(imageInput, commentArea);
+let editingId = null;
+let loadedItems = [];
 
-imageInput.addEventListener("change", () => {
-    selectedFiles = Array.from(imageInput.files);
-
-    if (editMode) {
-        renderEditImages();
-    } else {
-        renderPreview();
-    }
-});
 
 function escapeHtml(str) {
     return String(str ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll(">", "&gt;");
 }
 
-function renderPreview() {
-    previewArea.innerHTML = "";
 
-    selectedFiles.forEach((file, index) => {
-        const url = URL.createObjectURL(file);
+function rendergames(games, canDelete) {
 
-        const div = document.createElement("div");
-        div.className = "preview-item";
+    grid.innerHTML = games.map(e => {
 
-        div.innerHTML = `
-            <div class="preview-row">
-                <div class="preview-box">
-                    <img src="${url}" alt="写真${index + 1}">
-                </div>
+        let imagesHTML = "";
 
-                <div class="order-area">
-                    <label>表示順</label>
-                    <input type="number"
-                           name="display_orders[]"
-                           value="${index + 1}"
-                           min="1">
+        if (e.images) {
 
-                    <button type="button" class="order-btn" onclick="moveNewDown(${index})">↓</button>
-                    <button type="button" class="order-btn" onclick="moveNewUp(${index})">↑</button>
+            imagesHTML = `
+<div class="game-images">
 
-                    <br>
+${e.images.map(img => `
 
-                    <button type="button"
-                            class="remove-btn"
-                            onclick="removeNewImage(${index})">
-                        選択解除
-                    </button>
-                </div>
-            </div>
+<div class="photo-box">
 
-            <label>写真${index + 1} コメント</label>
-            <textarea name="image_comments[]" rows="3"></textarea>
-        `;
+<img src="${escapeHtml(img.image)}">
 
-        previewArea.appendChild(div);
-    });
-}
+<p class="photo-comment">
+${escapeHtml(img.comment ?? "")}
+</p>
 
-function renderEditImages() {
-    previewArea.innerHTML = "";
+</div>
 
-    existingImages.forEach((img, index) => {
+`).join("")}
 
-        img.display_order = index + 1;
+</div>`;
+        }
 
-        const div = document.createElement("div");
-        div.className = "preview-item";
+        const delBtn = canDelete ?
 
-        div.innerHTML = `
-            <input type="hidden"
-                   name="existing_image_ids[]"
-                   value="${escapeHtml(img.id)}">
+            `<button type="button" class="edit-btn" data-edit-id="${e.id}">編集</button>
+<form data-delete-form data-id="${e.id}">
+<button type="submit"
+class="delete-btn">
+削除
+</button>
+</form>`: "";
 
-            <div class="preview-row">
-                <div class="preview-box">
-                    <img src="${escapeHtml(img.image)}">
-                </div>
-
-                <div class="order-area">
-                    <label>表示順</label>
-                    <input type="number"
-                           name="existing_display_orders[]"
-                           value="${index + 1}"
-                           min="1">
-
-                    <button type="button"
-                            class="order-btn"
-                            onclick="moveExistingDown(${index})">↓</button>
-
-                    <button type="button"
-                            class="order-btn"
-                            onclick="moveExistingUp(${index})">↑</button>
-
-                    <br>
-
-                    <button type="button"
-                            class="remove-btn"
-                            onclick="removeExistingImage(${index})">
-                        選択解除
-                    </button>
-                </div>
-            </div>
-
-            <label>登録済み写真${index + 1} コメント</label>
-            <textarea name="existing_image_comments[]" rows="3">${escapeHtml(img.comment)}</textarea>
-        `;
-
-        previewArea.appendChild(div);
-    });
-
-    selectedFiles.forEach((file, index) => {
-
-        const url = URL.createObjectURL(file);
-        const no = existingImages.length + index + 1;
-
-        const div = document.createElement("div");
-        div.className = "preview-item";
-
-        div.innerHTML = `
-            <div class="preview-row">
-                <div class="preview-box">
-                    <img src="${url}">
-                </div>
-
-                <div class="order-area">
-                    <label>表示順</label>
-                    <input type="number"
-                           name="new_display_orders[]"
-                           value="${no}"
-                           min="1">
-
-                    <button type="button"
-                            class="order-btn"
-                            onclick="moveNewDown(${index})">↓</button>
-
-                    <button type="button"
-                            class="order-btn"
-                            onclick="moveNewUp(${index})">↑</button>
-
-                    <br>
-
-                    <button type="button"
-                            class="remove-btn"
-                            onclick="removeNewImage(${index})">
-                        選択解除
-                    </button>
-                </div>
-            </div>
-
-            <label>新規写真${index + 1} コメント</label>
-            <textarea name="new_image_comments[]" rows="3"></textarea>
-        `;
-
-        previewArea.appendChild(div);
-    });
-}
-
-function moveExistingUp(index) {
-    if (index <= 0) return;
-
-    [existingImages[index - 1], existingImages[index]] =
-        [existingImages[index], existingImages[index - 1]];
-
-    renderEditImages();
-}
-
-function moveExistingDown(index) {
-    if (index >= existingImages.length - 1) return;
-
-    [existingImages[index + 1], existingImages[index]] =
-        [existingImages[index], existingImages[index + 1]];
-
-    renderEditImages();
-}
-
-function removeExistingImage(index) {
-    deleteImageIds.push(existingImages[index].id);
-    existingImages.splice(index, 1);
-    renderEditImages();
-}
-
-function moveNewUp(index) {
-    if (index <= 0) return;
-
-    [selectedFiles[index - 1], selectedFiles[index]] =
-        [selectedFiles[index], selectedFiles[index - 1]];
-
-    if (editMode) {
-        renderEditImages();
-    } else {
-        renderPreview();
-    }
-}
-
-function moveNewDown(index) {
-    if (index >= selectedFiles.length - 1) return;
-
-    [selectedFiles[index + 1], selectedFiles[index]] =
-        [selectedFiles[index], selectedFiles[index + 1]];
-
-    if (editMode) {
-        renderEditImages();
-    } else {
-        renderPreview();
-    }
-}
-
-function removeNewImage(index) {
-    selectedFiles.splice(index, 1);
-
-    if (editMode) {
-        renderEditImages();
-    } else {
-        renderPreview();
-    }
-}
-
-function startEdit(id) {
-    const game = currentGames.find(g => Number(g.id) === Number(id));
-
-    if (!game) {
-        alert("編集データが見つかりません。");
-        return;
-    }
-
-    editMode = true;
-    editingGameId = game.id;
-
-    postForm.title.value = game.title;
-    postForm.description.value = game.description;
-
-    existingImages = (game.images ?? []).map(img => ({
-        id: img.id,
-        image: img.image,
-        image_path: img.image_path,
-        comment: img.comment ?? "",
-        display_order: img.display_order ?? 1
-    }));
-
-    deleteImageIds = [];
-    selectedFiles = [];
-
-    editId.value = game.id;
-    submitBtn.textContent = "編集";
-    cancelEditBtn.style.display = "block";
-    imageInput.required = false;
-    imageInput.value = "";
-
-    renderEditImages();
-
-    postArea.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
-}
-
-function resetFormMode() {
-    editMode = false;
-    editingGameId = null;
-
-    selectedFiles = [];
-    existingImages = [];
-    deleteImageIds = [];
-
-    editId.value = "";
-    submitBtn.textContent = "投稿";
-    cancelEditBtn.style.display = "none";
-
-    imageInput.required = true;
-    imageInput.value = "";
-
-    previewArea.innerHTML = "";
-    postForm.reset();
-}
-
-cancelEditBtn.addEventListener("click", () => {
-    resetFormMode();
-});
-
-function renderGames(games, canDelete) {
-    if (!games || games.length === 0) {
-        grid.innerHTML = "<p>投稿はまだありません。</p>";
-        return;
-    }
-
-    grid.innerHTML = games.map(game => {
-        const imagesHTML = `
-            <div class="game-images">
-                ${(game.images ?? []).map(img => `
-                    <div class="photo-box">
-                        <img src="${escapeHtml(img.image)}">
-                        <p class="photo-comment">
-                            ${escapeHtml(img.comment)}
-                        </p>
-                    </div>
-                `).join("")}
-            </div>
-        `;
-
-        const deleteBtn = canDelete ? `
-            <form data-delete-form data-id="${game.id}">
-                <button type="submit" class="delete-btn">消去</button>
-            </form>
-        ` : "";
 
         return `
-            <div class="game-card">
-                <h3>${escapeHtml(game.title)}</h3>
 
-                <div class="game-description">
-                    ${escapeHtml(game.description).replaceAll("\n", "<br>")}
-                </div>
+<div class="game-card">
 
-                ${imagesHTML}
+<h3>${escapeHtml(e.title)}</h3>
 
-                <small>投稿日：${escapeHtml(game.create_at)}</small>
+${imagesHTML}
 
-                <button type="button"
-                        class="edit-btn"
-                        onclick="startEdit(${game.id})">
-                    編集
-                </button>
+<div class="game-description">
+${escapeHtml(e.description).replaceAll("\n", "<br>")}
+</div>
 
-                ${deleteBtn}
-            </div>
-        `;
+<small>
+投稿日：${e.created_at}
+</small>
+
+${delBtn}
+
+</div>
+
+`;
+
     }).join("");
 
     document.querySelectorAll("[data-delete-form]").forEach(form => {
+
         form.addEventListener("submit", async ev => {
+
             ev.preventDefault();
 
-            if (!confirm("消去しますか？")) return;
+            const id = form.getAttribute("data-id");
+
+            if (!confirm("削除しますか？")) return;
 
             const fd = new FormData();
+
             fd.append("action", "delete");
-            fd.append("delete_id", form.dataset.id);
+            fd.append("delete_id", id);
 
             await fetch(API_URL, {
                 method: "POST",
                 body: fd
             });
 
-            resetFormMode();
             load();
+
+        });
+
+    });
+
+    document.querySelectorAll("[data-edit-id]").forEach(button => {
+        button.addEventListener("click", () => {
+            const item = loadedItems.find(row => Number(row.id) === Number(button.dataset.editId));
+            if (!item) return;
+            editingId = item.id;
+            postForm.elements.title.value = item.title || "";
+            postForm.elements.description.value = item.description || "";
+            photoSelector.loadExisting(item.images);
+            postForm.querySelector(".post-btn").textContent = "変更を保存";
+            postMsg.textContent = "編集中です";
+            postArea.scrollIntoView({ behavior: "smooth" });
         });
     });
+
 }
 
+
 async function load() {
+
     const res = await fetch(API_URL);
 
-    if (res.status === 401) {
-        postArea.style.display = "none";
-        grid.innerHTML = "<p>ログインしてください。</p>";
-        return;
-    }
-
     const data = await res.json();
+    loadedItems = data.games || [];
 
-    currentGames = data.games ?? [];
+    console.log(data);
 
     postArea.style.display = data.me?.can_post ? "block" : "none";
 
-    renderGames(currentGames, data.me?.can_delete);
+    rendergames(data.games, data.me?.can_delete);
+
 }
 
+
 postForm.addEventListener("submit", async ev => {
+
     ev.preventDefault();
 
+    if (photoSelector.count() === 0) return;
     const fd = new FormData(postForm);
-
-    // input[type=file] から自動で入った画像を削除（二重投稿防止）
     fd.delete("images[]");
-    fd.delete("new_images[]");
+    fd.append("action", editingId ? "update" : "add");
+    if (editingId) fd.append("id", editingId);
+    photoSelector.appendTo(fd);
 
-    if (editMode) {
-        fd.append("action", "edit");
-        fd.append("id", editingGameId);
-
-        deleteImageIds.forEach(id => {
-            fd.append("delete_image_ids[]", id);
-        });
-
-        selectedFiles.forEach(file => {
-            fd.append("new_images[]", file);
-        });
-
-    } else {
-        fd.append("action", "add");
-
-        selectedFiles.forEach(file => {
-            fd.append("images[]", file);
-        });
-    }
-
-    const res = await fetch(API_URL, {
+    await fetch(API_URL, {
         method: "POST",
         body: fd
     });
 
-    const data = await res.json();
+    postForm.reset();
 
-    if (!data.ok) {
-        alert("保存に失敗しました。");
-        console.log(data);
-        return;
-    }
+    photoSelector.clear();
 
-    resetFormMode();   // 投稿後に入力エリアをリセット
-    await load();
+    editingId = null;
+    postForm.querySelector(".post-btn").textContent = "投稿";
+
+    load();
+
 });
+
 
 load();

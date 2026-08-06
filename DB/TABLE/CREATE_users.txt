@@ -1,20 +1,13 @@
 USE nishijuku;
 
--- 既にあれば削除
 DROP TABLE IF EXISTS users;
+CREATE TABLE users (
 
-create table nishijuku.`users` (
-  id int(11) auto_increment not null comment 'ID'
-  , login_id varchar(50) comment 'ログインID'
-  , password_hash varchar(255) comment 'パスワード'
-  , name varchar(50) comment '名前'
-  , role_id int(11) comment '権限ID'
-  , created_at datetime comment '作成日'
-  , updated_at datetime comment '更新日'
-  , primary key (id)
-)
-  comment='ユーザ'
-  engine InnoDB
-  row_format DYNAMIC
-  auto_increment 5
-  collate utf8mb4_general_ci
+id INT(11) AUTO_INCREMENT NOT NULL COMMENT 'ユーザID', PRIMARY KEY (id),
+login_id VARCHAR(50) NOT NULL COMMENT 'ログインID',
+password_hash VARCHAR(255) NOT NULL COMMENT 'パスワード',
+name VARCHAR(50) NOT NULL COMMENT '名前',
+role_id INT(11) NOT NULL COMMENT '権限ID',
+created_at DATETIME NOT NULL COMMENT '作成日',
+updated_at DATETIME COMMENT '更新日'
+)ENGINE=InnoDB ROW_FORMAT=DYNAMIC COLLATE=utf8mb4_general_ci COMMENT='ユーザ';

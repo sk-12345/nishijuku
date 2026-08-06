@@ -1,0 +1,8 @@
+insert into nishijuku.users(login_id,password_hash,name,role_id,append_datetime,append_user_id,append_func_id,update_datetime,update_user_id,update_func_id,lock_timestamp) values 
+    ('システム','$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS','システムユーザー',1,TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000')
+  , ('管理者','$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS','管理者ユーザー',2,TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000')
+  , ('写真','$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS','写真ユーザー',3,TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000')
+  , ('一般','$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS','一般ユーザー',4,TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000')
+  , ('kou','$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS','齋藤　航',2,TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000')
+  , ('rai','$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS','齋藤　來',2,TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000')
+  , ('kazu','$2y$10$47B.L.YaI/OYsh7GzwXzquPqO67g3YoRvk1b6JIIrq1VwNq/m2AXS','齋藤　和俊',2,TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000','Batch','Batch',TIMESTAMP '2026-08-06 23:42:50.000');

@@ -6,433 +6,168 @@ const postMsg = document.getElementById("postMsg");
 const grid = document.getElementById("practiceGrid");
 
 const imageInput = document.getElementById("imageInput");
-const previewArea = document.getElementById("imagePreviewArea");
-const submitBtn = document.getElementById("submitBtn");
-const editId = document.getElementById("editId");
-const cancelEditBtn = document.getElementById("cancelEditBtn");
+const commentArea = document.getElementById("imageCommentArea");
 
-let selectedFiles = [];
-let currentPractices = [];
-let editMode = false;
-let editingPracticeId = null;
 
-let existingImages = [];
-let deleteImageIds = [];
+const photoSelector = setupPhotoSelector(imageInput, commentArea);
+let editingId = null;
+let loadedItems = [];
 
-imageInput.addEventListener("change", () => {
-    selectedFiles = Array.from(imageInput.files);
-
-    if (editMode) {
-        renderEditImages();
-    } else {
-        renderPreview();
-    }
-});
 
 function escapeHtml(str) {
     return String(str ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll(">", "&gt;");
 }
 
-function renderPreview() {
-    previewArea.innerHTML = "";
-
-    selectedFiles.forEach((file, index) => {
-        const url = URL.createObjectURL(file);
-
-        const div = document.createElement("div");
-        div.className = "preview-item";
-
-        div.innerHTML = `
-            <div class="preview-row">
-                <div class="preview-box">
-                    <img src="${url}">
-                </div>
-
-                <div class="order-area">
-                    <label>表示順</label>
-                    <input type="number"
-                           name="display_orders[]"
-                           value="${index + 1}"
-                           min="1">
-
-                    <button type="button" class="order-btn" onclick="moveNewDown(${index})">↓</button>
-                    <button type="button" class="order-btn" onclick="moveNewUp(${index})">↑</button>
-
-                    <br>
-
-                    <button type="button"
-                            class="remove-btn"
-                            onclick="removeNewImage(${index})">
-                        選択解除
-                    </button>
-                </div>
-            </div>
-
-            <label>写真${index + 1} コメント</label>
-            <textarea name="image_comments[]" rows="3"></textarea>
-        `;
-
-        previewArea.appendChild(div);
-    });
-}
-
-function renderEditImages() {
-    previewArea.innerHTML = "";
-
-    existingImages.forEach((img, index) => {
-        img.display_order = index + 1;
-
-        const div = document.createElement("div");
-        div.className = "preview-item";
-
-        div.innerHTML = `
-            <input type="hidden"
-                   name="existing_image_ids[]"
-                   value="${escapeHtml(img.id)}">
-
-            <div class="preview-row">
-                <div class="preview-box">
-                    <img src="${escapeHtml(img.image)}">
-                </div>
-
-                <div class="order-area">
-                    <label>表示順</label>
-                    <input type="number"
-                           name="existing_display_orders[]"
-                           value="${index + 1}"
-                           min="1">
-
-                    <button type="button" class="order-btn" onclick="moveExistingDown(${index})">↓</button>
-                    <button type="button" class="order-btn" onclick="moveExistingUp(${index})">↑</button>
-
-                    <br>
-
-                    <button type="button"
-                            class="remove-btn"
-                            onclick="removeExistingImage(${index})">
-                        選択解除
-                    </button>
-                </div>
-            </div>
-
-            <label>登録済み写真${index + 1} コメント</label>
-            <textarea name="existing_image_comments[]" rows="3">${escapeHtml(img.comment)}</textarea>
-        `;
-
-        previewArea.appendChild(div);
-    });
-
-    selectedFiles.forEach((file, index) => {
-        const url = URL.createObjectURL(file);
-        const no = existingImages.length + index + 1;
-
-        const div = document.createElement("div");
-        div.className = "preview-item";
-
-        div.innerHTML = `
-            <div class="preview-row">
-                <div class="preview-box">
-                    <img src="${url}">
-                </div>
-
-                <div class="order-area">
-                    <label>表示順</label>
-                    <input type="number"
-                           name="new_display_orders[]"
-                           value="${no}"
-                           min="1">
-
-                    <button type="button" class="order-btn" onclick="moveNewDown(${index})">↓</button>
-                    <button type="button" class="order-btn" onclick="moveNewUp(${index})">↑</button>
-
-                    <br>
-
-                    <button type="button"
-                            class="remove-btn"
-                            onclick="removeNewImage(${index})">
-                        選択解除
-                    </button>
-                </div>
-            </div>
-
-            <label>新規写真${index + 1} コメント</label>
-            <textarea name="new_image_comments[]" rows="3"></textarea>
-        `;
-
-        previewArea.appendChild(div);
-    });
-}
-
-function moveExistingUp(index) {
-    if (index <= 0) return;
-
-    [existingImages[index - 1], existingImages[index]] =
-        [existingImages[index], existingImages[index - 1]];
-
-    renderEditImages();
-}
-
-function moveExistingDown(index) {
-    if (index >= existingImages.length - 1) return;
-
-    [existingImages[index + 1], existingImages[index]] =
-        [existingImages[index], existingImages[index + 1]];
-
-    renderEditImages();
-}
-
-function removeExistingImage(index) {
-    deleteImageIds.push(existingImages[index].id);
-    existingImages.splice(index, 1);
-    renderEditImages();
-}
-
-function moveNewUp(index) {
-    if (index <= 0) return;
-
-    [selectedFiles[index - 1], selectedFiles[index]] =
-        [selectedFiles[index], selectedFiles[index - 1]];
-
-    editMode ? renderEditImages() : renderPreview();
-}
-
-function moveNewDown(index) {
-    if (index >= selectedFiles.length - 1) return;
-
-    [selectedFiles[index + 1], selectedFiles[index]] =
-        [selectedFiles[index], selectedFiles[index + 1]];
-
-    editMode ? renderEditImages() : renderPreview();
-}
-
-function removeNewImage(index) {
-    selectedFiles.splice(index, 1);
-    editMode ? renderEditImages() : renderPreview();
-}
-
-function startEdit(id) {
-    const practice = currentPractices.find(e => Number(e.id) === Number(id));
-
-    if (!practice) {
-        alert("編集データが見つかりません。");
-        return;
-    }
-
-    editMode = true;
-    editingPracticeId = practice.id;
-
-    postForm.title.value = practice.title;
-    postForm.description.value = practice.description;
-
-    existingImages = (practice.images ?? []).map(img => ({
-        id: img.id,
-        image: img.image,
-        image_path: img.image_path,
-        comment: img.comment ?? "",
-        display_order: img.display_order ?? 1
-    }));
-
-    deleteImageIds = [];
-    selectedFiles = [];
-
-    editId.value = practice.id;
-    submitBtn.textContent = "編集";
-    cancelEditBtn.style.display = "block";
-    imageInput.required = false;
-    imageInput.value = "";
-
-    renderEditImages();
-
-    postArea.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
-}
-
-function resetFormMode() {
-    editMode = false;
-    editingPracticeId = null;
-
-    selectedFiles = [];
-    existingImages = [];
-    deleteImageIds = [];
-
-    editId.value = "";
-    submitBtn.textContent = "投稿";
-    cancelEditBtn.style.display = "none";
-
-    imageInput.required = true;
-    imageInput.value = "";
-
-    previewArea.innerHTML = "";
-    postForm.reset();
-}
-
-cancelEditBtn.addEventListener("click", () => {
-    resetFormMode();
-});
 
 function renderPractices(practices, canDelete) {
-    if (!practices || practices.length === 0) {
-        grid.innerHTML = `<p class="no-practice">練習はまだありません</p>`;
-        return;
-    }
 
     grid.innerHTML = practices.map(e => {
-        const imagesHTML = `
+
+        let imagesHTML = "";
+
+        if (e.images) {
+
+            imagesHTML = `
 <div class="practice-images">
-${(e.images ?? []).map(img => `
+
+${e.images.map(img => `
+
 <div class="photo-box">
+
 <img src="${escapeHtml(img.image)}">
+
 <p class="photo-comment">
 ${escapeHtml(img.comment ?? "")}
 </p>
-</div>
-`).join("")}
-</div>`;
 
-        const deleteBtn = canDelete ? `
+</div>
+
+`).join("")}
+
+</div>`;
+        }
+
+        const delBtn = canDelete ?
+
+            `<button type="button" class="edit-btn" data-edit-id="${e.id}">編集</button>
 <form data-delete-form data-id="${e.id}">
-<button type="submit" class="delete-btn">
+<button type="submit"
+class="delete-btn">
 削除
 </button>
-</form>` : "";
+</form>`: "";
+
 
         return `
+
 <div class="practice-card">
 
 <h3>${escapeHtml(e.title)}</h3>
+
+${imagesHTML}
 
 <div class="practice-description">
 ${escapeHtml(e.description).replaceAll("\n", "<br>")}
 </div>
 
-${imagesHTML}
-
 <small>
-投稿日：${e.created_at ?? ""}
+投稿日：${e.created_at}
 </small>
 
-<button type="button"
-        class="edit-btn"
-        onclick="startEdit(${e.id})">
-編集
-</button>
+${delBtn}
 
-${deleteBtn}
+</div>
 
-</div>`;
+`;
+
     }).join("");
 
-    if (canDelete) {
-        document.querySelectorAll("[data-delete-form]").forEach(form => {
-            form.addEventListener("submit", async ev => {
-                ev.preventDefault();
+    document.querySelectorAll("[data-delete-form]").forEach(form => {
 
-                if (!confirm("削除しますか？")) return;
+        form.addEventListener("submit", async ev => {
 
-                const fd = new FormData();
-                fd.append("action", "delete");
-                fd.append("delete_id", form.dataset.id);
+            ev.preventDefault();
 
-                const res = await fetch(API_URL, {
-                    method: "POST",
-                    body: fd
-                });
+            const id = form.getAttribute("data-id");
 
-                if (!res.ok) {
-                    alert("削除に失敗しました");
-                    return;
-                }
+            if (!confirm("削除しますか？")) return;
 
-                resetFormMode();
-                await load();
+            const fd = new FormData();
+
+            fd.append("action", "delete");
+            fd.append("delete_id", id);
+
+            await fetch(API_URL, {
+                method: "POST",
+                body: fd
             });
+
+            load();
+
         });
-    }
+
+    });
+
+    document.querySelectorAll("[data-edit-id]").forEach(button => {
+        button.addEventListener("click", () => {
+            const item = loadedItems.find(row => Number(row.id) === Number(button.dataset.editId));
+            if (!item) return;
+            editingId = item.id;
+            postForm.elements.title.value = item.title || "";
+            postForm.elements.description.value = item.description || "";
+            photoSelector.loadExisting(item.images);
+            postForm.querySelector(".post-btn").textContent = "変更を保存";
+            postMsg.textContent = "編集中です";
+            postArea.scrollIntoView({ behavior: "smooth" });
+        });
+    });
+
 }
+
 
 async function load() {
-    try {
-        const res = await fetch(API_URL, {
-            cache: "no-store"
-        });
 
-        if (!res.ok) throw new Error();
+    const res = await fetch(API_URL);
 
-        const data = await res.json();
+    const data = await res.json();
+    loadedItems = data.practices || [];
 
-        currentPractices = data.practices ?? [];
+    postArea.style.display = data.me?.can_post ? "block" : "none";
 
-        postArea.style.display = data.me?.can_post ? "block" : "none";
+    renderPractices(data.practices, data.me?.can_delete);
 
-        renderPractices(
-            currentPractices,
-            data.me?.can_delete
-        );
-
-    } catch (err) {
-        console.error(err);
-
-        grid.innerHTML = `<p class="no-practice">読み込みに失敗しました</p>`;
-    }
 }
 
+
 postForm.addEventListener("submit", async ev => {
+
     ev.preventDefault();
 
-    postMsg.textContent = "";
-
+    if (photoSelector.count() === 0) return;
     const fd = new FormData(postForm);
-
-    // input[type=file] から自動で入った画像を削除（二重投稿防止）
     fd.delete("images[]");
-    fd.delete("new_images[]");
+    fd.append("action", editingId ? "update" : "add");
+    if (editingId) fd.append("id", editingId);
+    photoSelector.appendTo(fd);
 
-    if (editMode) {
-        fd.append("action", "edit");
-        fd.append("id", editingPracticeId);
-
-        deleteImageIds.forEach(id => {
-            fd.append("delete_image_ids[]", id);
-        });
-
-        selectedFiles.forEach(file => {
-            fd.append("new_images[]", file);
-        });
-
-    } else {
-        fd.append("action", "add");
-
-        selectedFiles.forEach(file => {
-            fd.append("images[]", file);
-        });
-    }
-
-    const res = await fetch(API_URL, {
+    await fetch(API_URL, {
         method: "POST",
         body: fd
     });
 
-    const data = await res.json();
+    postForm.reset();
 
-    if (!res.ok || !data.ok) {
-        postMsg.textContent = "保存に失敗しました";
-        console.log(data);
-        return;
-    }
+    photoSelector.clear();
 
-    const msg = editMode ? "編集しました！" : "投稿しました！";
+    editingId = null;
+    postForm.querySelector(".post-btn").textContent = "投稿";
 
-    resetFormMode();
-    postMsg.textContent = msg;
+    load();
 
-    await load();
 });
+
 
 load();

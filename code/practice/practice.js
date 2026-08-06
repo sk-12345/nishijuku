@@ -131,7 +131,7 @@ async function loadPractices() {
             small.textContent = `投稿日：${e.created_at ?? ""}`;
 
 
-            card.append(h3, p, imgBox, small);
+            card.append(h3, imgBox, p, small);
 
             grid.appendChild(card);
 

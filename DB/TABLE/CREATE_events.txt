@@ -1,18 +1,11 @@
 USE nishijuku;
 
--- events（投稿）
 DROP TABLE IF EXISTS events;
-
 CREATE TABLE events (
-  id INT AUTO_INCREMENT NOT NULL COMMENT 'ID',
-  title VARCHAR(100) COMMENT 'タイトル',
-  description TEXT COMMENT '説明',
-  created_by INT(11) COMMENT '作成者',
-  created_at DATETIME COMMENT '投稿時間',
-  PRIMARY KEY (id)
-)
-ENGINE=InnoDB
-ROW_FORMAT=DYNAMIC
-AUTO_INCREMENT=1
-COLLATE=utf8mb4_general_ci
-COMMENT='イベント投稿';
+
+id INT(11) AUTO_INCREMENT NOT NULL COMMENT 'ID', PRIMARY KEY (id),
+title VARCHAR(100) NOT NULL COMMENT 'タイトル', INDEX (title),
+description TEXT NOT NULL COMMENT '説明',
+create_by INT(11) COMMENT '作成者',
+create_at DATETIME COMMENT '投稿時間'
+)ENGINE=InnoDB ROW_FORMAT=DYNAMIC COLLATE=utf8mb4_general_ci COMMENT='イベントアルバム';

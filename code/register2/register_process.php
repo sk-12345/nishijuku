@@ -31,10 +31,14 @@ if ((int)$stmt->fetchColumn() > 0) {
 $hash = password_hash($password, PASSWORD_DEFAULT);
 
 $stmt = $pdo->prepare("
-  INSERT INTO users (login_id, password_hash, name, role_id, created_at, updated_at)
-  VALUES (?, ?, ?, ?, NOW(), NOW())
+  INSERT INTO users (
+      login_id, password_hash, name, role_id,
+      append_datetime, append_user_id, append_func_id,
+      update_datetime, update_user_id, update_func_id, lock_timestamp
+  )
+  VALUES (?, ?, ?, ?, NOW(), ?, 'register2', NOW(), ?, 'register2', CURRENT_TIMESTAMP)
 ");
-$stmt->execute([$login_id, $hash, $name, $role_id]);
+$stmt->execute([$login_id, $hash, $name, $role_id, $login_id, $login_id]);
 
 header("Location: ../login/login.html"); // or homeへ
 exit;

@@ -1,379 +1,254 @@
 <?php
 session_start();
 require_once '../db.php';
+require_once '../photo_update_helper.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
+
+/* =========================
+   ログインチェック
+========================= */
+
 if (!isset($_SESSION['user'])) {
     http_response_code(401);
-    echo json_encode(['error' => 'login_required']);
     exit;
 }
 
 $role_id = (int)$_SESSION['user']['role_id'];
 $user_id = (int)$_SESSION['user']['id'];
-$user_name = $_SESSION['user']['fullname'] ?? $_SESSION['user']['name'] ?? '';
+$audit_user = (string)($_SESSION['user']['login_id'] ?? $user_id);
+
+
+/* =========================
+   アップロード設定
+========================= */
 
 $UPLOAD_DIR_REAL = __DIR__ . '/../../img/events/';
-$UPLOAD_DIR_URL  = '/nishijuku/img/events/';
+$UPLOAD_DIR_URL  = '/nishijuku/img/events/';   // ← 本番用
 
 if (!is_dir($UPLOAD_DIR_REAL)) {
     mkdir($UPLOAD_DIR_REAL, 0777, true);
 }
 
-$can_post   = in_array($role_id, [1, 2, 3, 5], true);
+
+/* =========================
+   権限
+========================= */
+
+$can_post   = in_array($role_id, [1,2,3,5], true);
 $can_delete = ($role_id !== 4);
 
-function saveEventImage($file, $uploadDirReal) {
-    if ($file['error'] !== UPLOAD_ERR_OK) {
-        return null;
-    }
 
-    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    $allow = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
-    if (!in_array($ext, $allow, true)) {
-        return null;
-    }
-
-    $filename = uniqid('event_', true) . '.' . $ext;
-
-    if (!move_uploaded_file($file['tmp_name'], $uploadDirReal . $filename)) {
-        return null;
-    }
-
-    return $filename;
-}
+/* =========================
+   POST処理
+========================= */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $action = $_POST['action'] ?? '';
+    $action = $_POST['action'] ?? "";
 
-    if ($action === 'delete') {
+    if ($action === "update") {
+        if (!$can_post) { http_response_code(403); exit; }
+        $id = (int)($_POST['id'] ?? 0);
+        $title = trim((string)($_POST['title'] ?? ''));
+        $description = trim((string)($_POST['description'] ?? ''));
+        if ($id <= 0 || $title === '' || $description === '') { http_response_code(400); exit; }
+        try {
+            $pdo->beginTransaction();
+            $stmt = $pdo->prepare("
+                UPDATE events SET title=?, description=?, update_datetime=NOW(),
+                    update_user_id=?, update_func_id='event_post', lock_timestamp=CURRENT_TIMESTAMP
+                WHERE id=?
+            ");
+            $stmt->execute([$title, $description, $audit_user, $id]);
+            if ($stmt->rowCount() === 0) {
+                $check = $pdo->prepare("SELECT id FROM events WHERE id=?");
+                $check->execute([$id]);
+                if (!$check->fetchColumn()) throw new RuntimeException('event_not_found');
+            }
+            savePhotoManifest($pdo, 'event_images', 'event_id', $id, $UPLOAD_DIR_REAL, 'event', $audit_user, 'event_post');
+            $pdo->commit();
+            echo json_encode(['ok'=>true]);
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            http_response_code(500);
+            echo json_encode(['error'=>$e->getMessage()]);
+        }
+        exit;
+    }
 
-        if (!$can_delete) {
+
+    /* =========================
+       削除
+    ========================= */
+
+    if ($action === "delete") {
+
+        if(!$can_delete){
             http_response_code(403);
-            echo json_encode(['error' => 'no_delete_permission']);
+            echo json_encode(['error'=>'no_delete_permission']);
             exit;
         }
 
         $id = (int)($_POST['delete_id'] ?? 0);
 
+
+        // 画像取得
         $stmt = $pdo->prepare("
             SELECT image_path
             FROM event_images
-            WHERE event_id = ?
+            WHERE event_id=?
         ");
+
         $stmt->execute([$id]);
+
         $imgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+
+        // ファイル削除
         foreach ($imgs as $img) {
+
             $file = $UPLOAD_DIR_REAL . basename($img['image_path']);
 
             if (is_file($file)) {
                 unlink($file);
             }
+
         }
 
+
+        // DB削除
         $pdo->prepare("
             DELETE FROM event_images
-            WHERE event_id = ?
+            WHERE event_id=?
         ")->execute([$id]);
+
 
         $pdo->prepare("
             DELETE FROM events
-            WHERE id = ?
+            WHERE id=?
         ")->execute([$id]);
 
-        echo json_encode(['ok' => true]);
+
+        echo json_encode(['ok'=>true]);
         exit;
     }
 
-    if ($action === 'add') {
 
-        if (!$can_post) {
+
+    /* =========================
+       投稿
+    ========================= */
+
+    if ($action === "add") {
+
+        if(!$can_post){
             http_response_code(403);
-            echo json_encode(['error' => 'no_post_permission']);
             exit;
         }
 
-        $title = trim($_POST['title'] ?? '');
-        $description = trim($_POST['description'] ?? '');
+        $title       = $_POST['title'] ?? "";
+        $description = $_POST['description'] ?? "";
 
         $image_comments = $_POST['image_comments'] ?? [];
-        $display_orders = $_POST['display_orders'] ?? [];
 
-        if ($title === '' || $description === '') {
-            http_response_code(400);
-            echo json_encode(['error' => 'required']);
-            exit;
-        }
 
-        $pdo->beginTransaction();
+        /* イベント作成 */
 
-        try {
-            $stmt = $pdo->prepare("
-                INSERT INTO events
-                    (title, description, create_by, create_at)
-                VALUES
-                    (?, ?, ?, NOW())
-            ");
+        $stmt = $pdo->prepare("
+            INSERT INTO events
+            (title, description,
+             append_datetime, append_user_id, append_func_id,
+             update_datetime, update_user_id, update_func_id, lock_timestamp)
+            VALUES(?,?,NOW(),?,'event_post',NOW(),?,'event_post',CURRENT_TIMESTAMP)
+        ");
 
-            $stmt->execute([
-                $title,
-                $description,
-                $user_id
-            ]);
+        $stmt->execute([
+            $title,
+            $description,
+            $audit_user,
+            $audit_user
+        ]);
 
-            $event_id = $pdo->lastInsertId();
+        $event_id = $pdo->lastInsertId();
 
-            if (isset($_FILES['images'])) {
+        savePhotoManifest($pdo, 'event_images', 'event_id', (int)$event_id, $UPLOAD_DIR_REAL, 'event', $audit_user, 'event_post');
 
-                foreach ($_FILES['images']['tmp_name'] as $i => $tmp) {
 
-                    $file = [
-                        'name' => $_FILES['images']['name'][$i],
-                        'type' => $_FILES['images']['type'][$i],
-                        'tmp_name' => $_FILES['images']['tmp_name'][$i],
-                        'error' => $_FILES['images']['error'][$i],
-                        'size' => $_FILES['images']['size'][$i],
-                    ];
 
-                    $filename = saveEventImage($file, $UPLOAD_DIR_REAL);
+        /* 画像保存 */
 
-                    if ($filename === null) {
-                        continue;
-                    }
+        if(isset($_FILES['images'])){
 
-                    $comment = $image_comments[$i] ?? '';
-                    $order = (int)($display_orders[$i] ?? ($i + 1));
+            foreach($_FILES['images']['tmp_name'] as $i=>$tmp){
 
-                    $stmt = $pdo->prepare("
-                        INSERT INTO event_images
-                            (
-                                event_id,
-                                description,
-                                image_path,
-                                display_order
-                            )
-                        VALUES
-                            (?, ?, ?, ?)
-                    ");
+                if($_FILES['images']['error'][$i] !== 0) continue;
 
-                    $stmt->execute([
-                        $event_id,
-                        $comment,
-                        $filename,
-                        $order
-                    ]);
-                }
-            }
+                $ext = strtolower(
+                    pathinfo(
+                        $_FILES['images']['name'][$i],
+                        PATHINFO_EXTENSION
+                    )
+                );
 
-            $pdo->commit();
+                $filename = uniqid('event_',true) . '.' . $ext;
 
-            echo json_encode(['ok' => true]);
-            exit;
+                move_uploaded_file(
+                    $tmp,
+                    $UPLOAD_DIR_REAL . $filename
+                );
 
-        } catch (Exception $e) {
-            $pdo->rollBack();
-
-            http_response_code(500);
-            echo json_encode([
-                'error' => 'db_error',
-                'message' => $e->getMessage()
-            ]);
-            exit;
-        }
-    }
-
-    if ($action === 'edit') {
-
-        if (!$can_post) {
-            http_response_code(403);
-            echo json_encode(['error' => 'no_edit_permission']);
-            exit;
-        }
-
-        $id = (int)($_POST['id'] ?? 0);
-        $title = trim($_POST['title'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-
-        if ($id <= 0 || $title === '' || $description === '') {
-            http_response_code(400);
-            echo json_encode(['error' => 'required']);
-            exit;
-        }
-
-        $existing_ids = $_POST['existing_image_ids'] ?? [];
-        $existing_comments = $_POST['existing_image_comments'] ?? [];
-        $delete_image_ids = $_POST['delete_image_ids'] ?? [];
-
-        $new_comments = $_POST['new_image_comments'] ?? [];
-        $new_orders = $_POST['new_display_orders'] ?? [];
-
-        $pdo->beginTransaction();
-
-        try {
-            $stmt = $pdo->prepare("
-                UPDATE events
-                SET
-                    title = ?,
-                    description = ?
-                WHERE id = ?
-            ");
-
-            $stmt->execute([
-                $title,
-                $description,
-                $id
-            ]);
-
-            foreach ($delete_image_ids as $delete_image_id) {
-                $delete_image_id = (int)$delete_image_id;
+                $comment = $image_comments[$i] ?? "";
 
                 $stmt = $pdo->prepare("
-                    SELECT image_path
-                    FROM event_images
-                    WHERE id = ?
-                      AND event_id = ?
+                    INSERT INTO event_images
+                    (event_id, description, image_path, display_order,
+                     append_datetime, append_user_id, append_func_id,
+                     update_datetime, update_user_id, update_func_id, lock_timestamp)
+                    VALUES(?,?,?,?,NOW(),?,'event_post',NOW(),?,'event_post',CURRENT_TIMESTAMP)
                 ");
 
                 $stmt->execute([
-                    $delete_image_id,
-                    $id
-                ]);
-
-                $img = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if ($img) {
-                    $file = $UPLOAD_DIR_REAL . basename($img['image_path']);
-
-                    if (is_file($file)) {
-                        unlink($file);
-                    }
-
-                    $stmt = $pdo->prepare("
-                        DELETE FROM event_images
-                        WHERE id = ?
-                          AND event_id = ?
-                    ");
-
-                    $stmt->execute([
-                        $delete_image_id,
-                        $id
-                    ]);
-                }
-            }
-
-            foreach ($existing_ids as $i => $image_id) {
-                $image_id = (int)$image_id;
-                $comment = $existing_comments[$i] ?? '';
-                $order = $i + 1;
-
-                $stmt = $pdo->prepare("
-                    UPDATE event_images
-                    SET
-                        description = ?,
-                        display_order = ?
-                    WHERE id = ?
-                      AND event_id = ?
-                ");
-
-                $stmt->execute([
+                    $event_id,
                     $comment,
-                    $order,
-                    $image_id,
-                    $id
+                    $filename,
+                    $i + 1,
+                    $audit_user,
+                    $audit_user
                 ]);
+
             }
 
-            if (isset($_FILES['new_images'])) {
-
-                foreach ($_FILES['new_images']['tmp_name'] as $i => $tmp) {
-
-                    $file = [
-                        'name' => $_FILES['new_images']['name'][$i],
-                        'type' => $_FILES['new_images']['type'][$i],
-                        'tmp_name' => $_FILES['new_images']['tmp_name'][$i],
-                        'error' => $_FILES['new_images']['error'][$i],
-                        'size' => $_FILES['new_images']['size'][$i],
-                    ];
-
-                    $filename = saveEventImage($file, $UPLOAD_DIR_REAL);
-
-                    if ($filename === null) {
-                        continue;
-                    }
-
-                    $comment = $new_comments[$i] ?? '';
-                    $order = (int)($new_orders[$i] ?? ($i + 1));
-
-                    $stmt = $pdo->prepare("
-                        INSERT INTO event_images
-                            (
-                                event_id,
-                                description,
-                                image_path,
-                                display_order
-                            )
-                        VALUES
-                            (?, ?, ?, ?)
-                    ");
-
-                    $stmt->execute([
-                        $id,
-                        $comment,
-                        $filename,
-                        $order
-                    ]);
-                }
-            }
-
-            $pdo->commit();
-
-            echo json_encode(['ok' => true]);
-            exit;
-
-        } catch (Exception $e) {
-            $pdo->rollBack();
-
-            http_response_code(500);
-            echo json_encode([
-                'error' => 'db_error',
-                'message' => $e->getMessage()
-            ]);
-            exit;
         }
+
+        echo json_encode(['ok'=>true]);
+        exit;
+
     }
 
-    http_response_code(400);
-    echo json_encode(['error' => 'unknown_action']);
-    exit;
 }
 
+
+/* =========================
+   GET（イベント取得）
+========================= */
+
 $stmt = $pdo->query("
-    SELECT
-        id,
-        title,
-        description,
-        create_by,
-        DATE_FORMAT(create_at, '%Y/%m/%d %H:%i') AS create_at
+    SELECT events.*, append_datetime AS created_at
     FROM events
-    ORDER BY create_at DESC
+    ORDER BY append_datetime DESC
 ");
 
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+
 foreach ($events as &$e) {
 
     $stmt2 = $pdo->prepare("
-        SELECT
-            id,
-            image_path,
-            description,
-            display_order
+        SELECT id,image_path,description
         FROM event_images
-        WHERE event_id = ?
+        WHERE event_id=?
         ORDER BY display_order ASC, id ASC
     ");
 
@@ -384,21 +259,27 @@ foreach ($events as &$e) {
     $e['images'] = [];
 
     foreach ($imgs as $img) {
+
         $e['images'][] = [
-            'id' => $img['id'],
-            'image_path' => $img['image_path'],
-            'image' => $UPLOAD_DIR_URL . $img['image_path'],
-            'comment' => $img['description'],
-            'display_order' => $img['display_order']
+            'id'      => (int)$img['id'],
+            'image'   => $UPLOAD_DIR_URL . $img['image_path'],
+            'comment' => $img['description']
         ];
+
     }
+
 }
 
+
+/* =========================
+   JSON返却
+========================= */
+
 echo json_encode([
-    'events' => $events,
-    'me' => [
-        'role_id' => $role_id,
-        'can_post' => $can_post,
-        'can_delete' => $can_delete
+    'events'=>$events,
+    'me'=>[
+        'role_id'=>$role_id,
+        'can_post'=>$can_post,
+        'can_delete'=>$can_delete
     ]
 ], JSON_UNESCAPED_UNICODE);

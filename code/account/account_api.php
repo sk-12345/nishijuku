@@ -18,6 +18,7 @@ if (!isset($_SESSION['user'])) {
 
 $myId   = (int)($_SESSION['user']['id'] ?? 0);
 $myRole = (int)($_SESSION['user']['role_id'] ?? 0); // 1=SYSTEM, 2=ADMIN, 3=PHOTO, 4=GENERAL
+$auditUser = (string)($_SESSION['user']['login_id'] ?? $myId);
 
 // ✅ SYSTEM / ADMIN 以外は見れない
 if (!in_array($myRole, [1, 2], true)) {
@@ -111,8 +112,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $hash = password_hash($newPass, PASSWORD_DEFAULT);
 
     // ※ usersテーブルのカラム名が違うならここを合わせて！
-    $up = $pdo->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
-    $up->execute([$hash, $targetId]);
+    $up = $pdo->prepare("
+        UPDATE users
+        SET password_hash = ?, update_datetime = NOW(), update_user_id = ?,
+            update_func_id = 'account_password', lock_timestamp = CURRENT_TIMESTAMP
+        WHERE id = ?
+    ");
+    $up->execute([$hash, $auditUser, $targetId]);
 
     echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
     exit;

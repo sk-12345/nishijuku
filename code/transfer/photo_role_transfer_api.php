@@ -15,6 +15,7 @@ if (!isset($_SESSION['user'])) {
 
 $myId   = (int)($_SESSION['user']['id'] ?? 0);
 $myRole = (int)($_SESSION['user']['role_id'] ?? 0); // 1=SYSTEM, 2=ADMIN, 3=PHOTO, 4=GENERAL
+$auditUser = (string)($_SESSION['user']['login_id'] ?? $myId);
 
 // PHOTOのみ実行可能
 if ($myRole !== 3) {
@@ -121,12 +122,33 @@ try {
     }
 
     // ①自分を GENERAL に降格
-    $stmt = $pdo->prepare("UPDATE users SET role_id = 4 WHERE id = ?");
-    $stmt->execute([$myId]);
+    $stmt = $pdo->prepare("
+        UPDATE users
+        SET role_id = 4, update_datetime = NOW(), update_user_id = ?,
+            update_func_id = 'photo_role_transfer', lock_timestamp = CURRENT_TIMESTAMP
+        WHERE id = ?
+    ");
+    $stmt->execute([$auditUser, $myId]);
 
     // ②相手を PHOTO に昇格
-    $stmt = $pdo->prepare("UPDATE users SET role_id = 3 WHERE id = ?");
-    $stmt->execute([$targetId]);
+    $stmt = $pdo->prepare("
+        UPDATE users
+        SET role_id = 3, update_datetime = NOW(), update_user_id = ?,
+            update_func_id = 'photo_role_transfer', lock_timestamp = CURRENT_TIMESTAMP
+        WHERE id = ?
+    ");
+    $stmt->execute([$auditUser, $targetId]);
+
+    $stmt = $pdo->prepare("
+        INSERT INTO role_transfer_logs (
+            from_user_id, to_user_id, description, created_at,
+            append_datetime, append_user_id, append_func_id,
+            update_datetime, update_user_id, update_func_id, lock_timestamp
+        )
+        VALUES (?, ?, 'PHOTO role transfer', CURRENT_DATE,
+                NOW(), ?, 'photo_role_transfer', NOW(), ?, 'photo_role_transfer', CURRENT_TIMESTAMP)
+    ");
+    $stmt->execute([$myId, $targetId, $auditUser, $auditUser]);
 
     $pdo->commit();
 

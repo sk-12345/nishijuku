@@ -1,53 +1,78 @@
 ﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
+
     <meta charset="UTF-8">
-    <title>練習投稿 | 初柔会西塾</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="practice_post.css">
+
+    <title>試合投稿 | 西塾柔道クラブ</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet"
+          href="practice_post.css">
+    <link rel="stylesheet" href="../photo_selection.css">
+
 </head>
 
 <body>
 
     <div class="practice-wrapper">
 
-        <h2 class="page-title">練習投稿（ログイン必須）</h2>
+        <h2 class="page-title">
+            試合投稿（ログイン必須）
+        </h2>
 
         <div class="back-links">
-            <a href="../home/home.html">ホームに戻る</a>
+            <a href="../home/home.html">
+                ホームに戻る
+            </a>
         </div>
 
-        <div id="postArea" class="form-box" style="display:none;">
+
+        <div id="postArea"
+             class="form-box"
+             style="display:none;">
+
 
             <form id="postForm">
 
-                <input type="hidden" id="editId" name="edit_id">
+                <label>
+                    タイトル
+                </label>
 
-                <label>タイトル</label>
-                <input type="text" name="title" required>
+                <input type="text"
+                       name="title"
+                       required>
 
-                <label>コメント</label>
-                <textarea name="description" rows="4" required></textarea>
 
-                <label>写真（複数選択可）</label>
+                <label>
+                    コメント
+                </label>
+
+<textarea name="description"
+          rows="4"
+          required></textarea>
+
+
+                <label>
+                    写真（複数選択可）
+                </label>
+
                 <input type="file"
                        name="images[]"
                        accept="image/*"
                        multiple
-                       id="imageInput"
-                       required>
+                       id="imageInput">
 
-                <div id="imagePreviewArea"></div>
 
-                <button type="submit" class="post-btn" id="submitBtn">
+                <p class="photo-help">選択した写真を確認し、「前へ」「後ろへ」で掲載順を変更できます。</p>
+                <div id="imageCommentArea" class="selected-photo-list"></div>
+
+
+                <button type="submit"
+                        class="post-btn">
                     投稿
-                </button>
-
-                <button type="button"
-                        class="cancel-btn"
-                        id="cancelEditBtn"
-                        style="display:none;">
-                    編集キャンセル
                 </button>
 
             </form>
@@ -56,14 +81,22 @@
 
         </div>
 
-        <h2 class="page-title">練習一覧</h2>
 
-        <div id="practiceGrid" class="practice-grid">
+        <h2 class="page-title">
+            試合一覧
+        </h2>
+
+
+        <div id="practiceGrid"
+             class="practice-grid">
+
             <p>読み込み中...</p>
+
         </div>
 
     </div>
 
+    <script src="../photo_selection.js"></script>
     <script src="practice_post.js"></script>
 
 </body>

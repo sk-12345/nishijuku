@@ -40,8 +40,14 @@ if (!$row || !password_verify($current, $row['password_hash'])) {
 // 更新（ハッシュ化）
 $newHash = password_hash($new, PASSWORD_DEFAULT);
 
-$upd = $pdo->prepare("UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?");
-$ok = $upd->execute([$newHash, $userId]);
+$auditUser = (string)($_SESSION['user']['login_id'] ?? $userId);
+$upd = $pdo->prepare("
+    UPDATE users
+    SET password_hash = ?, update_datetime = NOW(), update_user_id = ?,
+        update_func_id = 'password_change', lock_timestamp = CURRENT_TIMESTAMP
+    WHERE id = ?
+");
+$ok = $upd->execute([$newHash, $auditUser, $userId]);
 
 if ($ok) {
     // セッション固定対策：念のため更新後にID再生成もOK

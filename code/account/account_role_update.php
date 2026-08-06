@@ -46,8 +46,14 @@ if ($myRole === 1) {
 }
 
 // ✅ 更新
-$upd = $pdo->prepare("UPDATE users SET role_id = ? WHERE id = ?");
-$upd->execute([$newRoleId, $userId]);
+$auditUser = (string)($_SESSION['user']['login_id'] ?? $myId);
+$upd = $pdo->prepare("
+    UPDATE users
+    SET role_id = ?, update_datetime = NOW(), update_user_id = ?,
+        update_func_id = 'account_role_update', lock_timestamp = CURRENT_TIMESTAMP
+    WHERE id = ?
+");
+$upd->execute([$newRoleId, $auditUser, $userId]);
 
 header("Location: account.html");
 exit();

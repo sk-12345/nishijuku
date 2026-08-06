@@ -5,27 +5,24 @@ header('Content-Type: application/json; charset=UTF-8');
 
 $UPLOAD_DIR_URL = '/nishijuku/img/games/';
 
+
+/* 投稿取得 */
+
 $stmt = $pdo->query("
-    SELECT
-        id,
-        title,
-        description,
-        create_by,
-        DATE_FORMAT(create_at, '%Y/%m/%d %H:%i') AS created_at
-    FROM games
-    ORDER BY create_at DESC
+SELECT games.*, append_datetime AS created_at
+FROM games
+ORDER BY append_datetime DESC
 ");
 
 $games = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+
+/* 各投稿の画像取得 */
+
 foreach ($games as &$p) {
 
     $stmt2 = $pdo->prepare("
-        SELECT
-            id,
-            image_path,
-            description,
-            display_order
+        SELECT image_path, description
         FROM game_images
         WHERE game_id = ?
         ORDER BY display_order ASC, id ASC
@@ -38,14 +35,16 @@ foreach ($games as &$p) {
     $p['images'] = [];
 
     foreach ($imgs as $img) {
+
         $p['images'][] = [
-            'id' => $img['id'],
-            'image' => $UPLOAD_DIR_URL . $img['image_path'],
-            'comment' => $img['description'],
-            'display_order' => $img['display_order']
+            'image'   => $UPLOAD_DIR_URL . $img['image_path'],
+            'comment' => $img['description']
         ];
+
     }
+
 }
+
 
 echo json_encode(
     $games,
