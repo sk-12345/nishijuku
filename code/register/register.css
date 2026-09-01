@@ -81,6 +81,28 @@ body {
     font-size: 14px;
 }
 
+.register-box fieldset {
+    margin-top: 18px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.register-box fieldset label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    font-weight: normal;
+}
+
+.register-box fieldset input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+}
+
 /* ✅ PC用 */
 @media screen and (min-width: 900px) {
     .register-box {

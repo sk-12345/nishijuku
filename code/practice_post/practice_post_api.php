@@ -2,6 +2,7 @@
 session_start();
 require_once '../db.php';
 require_once '../photo_update_helper.php';
+require_once '../permissions.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
@@ -15,7 +16,8 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 
-$role_id = (int)$_SESSION['user']['role_id'];
+$role = requirePermission($pdo, 'practice_flg');
+$role_id = (int)$role['role_id'];
 $user_id = (int)$_SESSION['user']['id'];
 $audit_user = (string)($_SESSION['user']['login_id'] ?? $user_id);
 
@@ -36,8 +38,8 @@ if (!is_dir($UPLOAD_DIR_REAL)) {
    権限
 ========================= */
 
-$can_post   = in_array($role_id, [1,2,3,5]);
-$can_delete = ($role_id !== 4);
+$can_post = true;
+$can_delete = true;
 
 
 /* =========================

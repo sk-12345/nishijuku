@@ -1,54 +1,29 @@
 const API_URL = "register_api.php";
-const roleSelect = document.getElementById("roleSelect");
 const msgEl = document.getElementById("msg");
-
-function showMsg(text, isError) {
-    if (!msgEl) return;
-    msgEl.textContent = text;
-    msgEl.style.display = "block";
-    msgEl.className = isError ? "msg error" : "msg ok";
-}
-
-function escapeHtml(str) {
-    return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-async function loadRoles() {
-    const res = await fetch(API_URL, { cache: "no-store" });
-
-    if (res.status === 401) {
-        location.href = "../login/login.php";
-        return;
-    }
-    if (res.status === 403) {
-        showMsg("このページにアクセスする権限がありません", true);
-        roleSelect.innerHTML = `<option value="">権限なし</option>`;
-        roleSelect.disabled = true;
-        return;
-    }
-    if (!res.ok) {
-        showMsg("読み込みに失敗しました", true);
-        roleSelect.innerHTML = `<option value="">エラー</option>`;
-        return;
-    }
-
+const permissionFieldset = document.getElementById("permissionFieldset");
+const systemFlag = document.getElementById("systemFlag");
+function showMsg(text) { if (!msgEl) return; msgEl.textContent = text; msgEl.style.display = "block"; msgEl.className = "msg error"; }
+async function loadPermissions() {
+    const res = await fetch(API_URL, { cache: "no-store", credentials: "include" });
+    if (res.status === 401) { location.href = "../login/login.php"; return; }
+    if (res.status === 403) { showMsg("縺薙�ｮ繝壹�ｼ繧ｸ縺ｫ繧｢繧ｯ繧ｻ繧ｹ縺吶ｋ讓ｩ髯舌′縺ゅｊ縺ｾ縺帙ｓ"); return; }
+    if (!res.ok) { showMsg("讓ｩ髯先ュ蝣ｱ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆"); return; }
     const data = await res.json();
-    const roles = data.selectable_roles ?? [];
-
-    if (!roles.length) {
-        roleSelect.innerHTML = `<option value="">選択肢がありません</option>`;
-        roleSelect.disabled = true;
-        return;
-    }
-
-    roleSelect.innerHTML = roles
-        .map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(r.name)}</option>`)
-        .join("");
+    const permissionLabels = (data.display_master?.koumoku ?? [])
+        .filter(row => row.system_key === "permission");
+    permissionLabels.forEach((row, index) => {
+        const flag = ["system_flg", "create_account_flg", "account_flg", "update_confirmation_flg", "practice_flg", "game_flg", "event_flg"][index];
+        const label = row.display_name;
+        if (!flag) return;
+        const input = permissionFieldset.querySelector(`input[name="${flag}"]`);
+        if (!input) return;
+        const labelElement = input.closest("label");
+        if (labelElement) labelElement.replaceChildren(input, document.createTextNode(` ${label}`));
+    });
+    const createButton = permissionFieldset.closest("form")?.querySelector('button[type="submit"]');
+    const createName = (data.display_master?.button ?? []).find(row => row.system_key === "register");
+    if (createButton && createName) createButton.textContent = createName.display_name;
+    permissionFieldset.disabled = false;
+    if (data.me?.is_system !== true) { systemFlag.checked = false; systemFlag.disabled = true; }
 }
-
-loadRoles();
+loadPermissions();

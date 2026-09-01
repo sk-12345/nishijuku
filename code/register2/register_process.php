@@ -1,13 +1,12 @@
 <?php
 session_start();
 require_once '../db.php';
+require_once '../permissions.php';
 
 // ✅ ログイン必須を撤廃（ここ消す）
 // if (!isset($_SESSION['user'])) { exit('不正アクセス'); }
 
-// ✅ 権限チェックも撤廃（誰でも作れる）
-// $myRoleId = ...
-// if (!in_array(...)) { exit(...) }
+$actor = requirePermission($pdo, 'create_account_flg', false);
 
 $login_id = trim($_POST['login_id'] ?? '');
 $name     = trim($_POST['name'] ?? '');
@@ -15,6 +14,10 @@ $password = $_POST['password'] ?? '';
 
 // ✅ role_id は必ず GENERAL 固定（ユーザー入力を信用しない）
 $role_id  = 4;
+$stmt = $pdo->prepare('SELECT id AS role_id, system_flg, account_flg FROM roles WHERE id=?');
+$stmt->execute([$role_id]);
+$newRole = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+if (!canAssignRole($actor, $newRole)) denyRequest(403, 'この権限は作成できません', false);
 
 if ($login_id === '' || $name === '' || $password === '') {
     exit('入力が不足しています');

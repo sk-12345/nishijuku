@@ -25,10 +25,16 @@
                 <label>パスワード</label>
                 <input type="password" name="password" required>
 
-                <label>権限</label>
-                <select name="role_id" id="roleSelect" required>
-                    <option value="">読み込み中...</option>
-                </select>
+                <fieldset id="permissionFieldset" disabled>
+                    <legend>権限</legend>
+                    <label><input type="checkbox" name="system_flg" value="1" id="systemFlag"> システム</label>
+                    <label><input type="checkbox" name="create_account_flg" value="1"> アカウント作成</label>
+                    <label><input type="checkbox" name="account_flg" value="1"> アカウント管理</label>
+                    <label><input type="checkbox" name="update_confirmation_flg" value="1"> 更新履歴</label>
+                    <label><input type="checkbox" name="practice_flg" value="1"> 練習</label>
+                    <label><input type="checkbox" name="game_flg" value="1"> 試合</label>
+                    <label><input type="checkbox" name="event_flg" value="1"> イベント</label>
+                </fieldset>
 
                 <button type="submit">作成</button>
             </form>

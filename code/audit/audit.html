@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>更新履歴 | 西塾柔道クラブ</title>
+    <link rel="stylesheet" href="audit.css" />
+</head>
+<body>
+    <main class="audit-wrapper">
+        <h2>更新履歴</h2>
+        <p class="description">各データを最後に変更した人と日時を確認できます。</p>
+        <p class="back"><a href="../home/home.html">← ホームに戻る</a></p>
+
+        <div class="search-area">
+            <label for="searchInput">履歴を検索</label>
+            <input id="searchInput" type="search" placeholder="対象・データ名・変更者を入力" autocomplete="off" />
+        </div>
+
+        <div id="message" class="message" aria-live="polite">読み込み中...</div>
+        <div class="table-wrap" hidden>
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>対象</th>
+                        <th>データ</th>
+                        <th>最終変更者</th>
+                        <th>最終変更日時</th>
+                    </tr>
+                </thead>
+                <tbody id="auditTbody"></tbody>
+            </table>
+        </div>
+    </main>
+    <script src="audit.js"></script>
+</body>
+</html>

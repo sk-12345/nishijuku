@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>権限設定 | 西塾柔道クラブ</title>
+    <link rel="stylesheet" href="account_detail.css">
+</head>
+<body>
+    <main class="detail-card">
+        <h2>権限設定</h2>
+        <p id="userSummary">読み込み中...</p>
+        <p id="message" class="message" hidden></p>
+        <form id="permissionForm" method="POST" action="account_permission_update.php" hidden>
+            <input id="userId" type="hidden" name="user_id">
+            <div id="permissionList" class="permission-list"></div>
+            <button type="submit">保存</button>
+        </form>
+        <a class="back-link" href="account.html">← アカウント一覧へ戻る</a>
+    </main>
+    <script src="account_detail.js"></script>
+</body>
+</html>

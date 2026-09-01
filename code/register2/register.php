@@ -1,16 +1,14 @@
 <?php
 session_start();
+require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../permissions.php';
 
 if (!isset($_SESSION['user'])) {
     header("Location: ../login/login.php");
     exit;
 }
 
-$myRoleId = (int)($_SESSION['user']['role_id'] ?? 0);
-
-if (!in_array($myRoleId, [1, 2], true)) {
-    exit('このページにアクセスする権限がありません');
-}
+requirePermission($pdo, 'create_account_flg', false);
 
 header("Location: register.html");
 exit;

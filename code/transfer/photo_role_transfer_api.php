@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 session_start();
 require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../permissions.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
@@ -14,13 +15,14 @@ if (!isset($_SESSION['user'])) {
 }
 
 $myId   = (int)($_SESSION['user']['id'] ?? 0);
-$myRole = (int)($_SESSION['user']['role_id'] ?? 0); // 1=SYSTEM, 2=ADMIN, 3=PHOTO, 4=GENERAL
+$actorRole = requirePermission($pdo, 'account_flg');
+$myRole = (int)$actorRole['role_id'];
 $auditUser = (string)($_SESSION['user']['login_id'] ?? $myId);
 
 // PHOTOのみ実行可能
-if ($myRole !== 3) {
+if (!isSystemRole($actorRole)) {
     http_response_code(403);
-    echo json_encode(['error' => 'forbidden'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'use_account_management'], JSON_UNESCAPED_UNICODE);
     exit();
 }
 
