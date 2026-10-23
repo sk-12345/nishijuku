@@ -1,0 +1,2 @@
+insert into nishijuku.users(login_id,password_hash,name,append_datetime,append_user_id,append_func_id,update_datetime,update_user_id,update_func_id,lock_timestamp) values 
+    ('system','$2y$10$0617rwGR5ad/hQMpivPd.umlme7fPKcHws3s7uBl75/JSzGvnLMsC','システム',TIMESTAMP '2026-09-02 22:53:20.196','system','system',TIMESTAMP '2026-09-02 22:53:36.781','system','system',TIMESTAMP '2026-09-02 22:53:53.998');

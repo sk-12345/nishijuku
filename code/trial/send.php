@@ -21,7 +21,7 @@ $config = require __DIR__ . '/config.php';
 $GMAIL_USER = (string)($config['GMAIL_USER'] ?? '');
 $GMAIL_APP  = (string)($config['GMAIL_APP'] ?? '');
 $TO_MAIL    = $config['TO_MAIL'] ?? []; // ✅ string でも array でもOK
-$FROM_NAME  = (string)($config['FROM_NAME'] ?? '西塾柔道クラブ');
+$FROM_NAME  = (string)($config['FROM_NAME'] ?? '初柔会西塾');
 
 if ($GMAIL_USER === '' || $GMAIL_APP === '') {
   jexit(['ok' => false, 'error' => 'config_missing'], 500);
@@ -88,7 +88,7 @@ foreach ($participants as $idx => $p) {
   }
 
   // 値チェック
-  if (!in_array($cat, ['幼児', '小学生', '中学生'], true)) {
+  if (!in_array($cat, ['幼児', '小学生', '中学生', '高校生'], true)) {
     jexit(['ok' => false, 'error' => 'participant_category_invalid'], 400);
   }
   if (!in_array($gender, ['男', '女'], true)) {
@@ -105,9 +105,9 @@ foreach ($participants as $idx => $p) {
     if ($grade === '' || !in_array($grade, $grades_el, true)) {
       jexit(['ok' => false, 'error' => 'participant_grade_invalid'], 400);
     }
-  } elseif ($cat === '中学生') {
+  } elseif ($cat === '中学生' || $cat === '高校生') {
     if ($grade === '' || !in_array($grade, $grades_jr, true)) {
-      jexit(['ok' => false, 'error' => 'participant_grade_invalid'], 400);
+        jexit(['ok' => false, 'error' => 'participant_grade_invalid'], 400);
     }
   }
 
@@ -151,7 +151,7 @@ if (count($toList) === 0) {
 $subject = '【西塾体験応募】' . $guardian . ' 様（' . count($clean) . '名）';
 
 $body =
-"西塾柔道クラブ 体験応募フォーム\n".
+"初柔会西塾 体験応募フォーム\n".
 "----------------------------------\n".
 "【保護者情報】\n".
 "保護者氏名: {$guardian}\n".

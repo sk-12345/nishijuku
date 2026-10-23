@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>権限設定 | 初柔会西塾</title>
+    <link rel="stylesheet" href="account_detail.css">
+</head>
+<body>
+    <main class="detail-card">
+        <h2 data-koumoku-id ="account_kengenSettei"></h2>
+        <p id="userSummary" data-message-id="common_yomikomi"></p>
+        <p id="message" class="message" hidden></p>
+        <form id="permissionForm" method="POST" action="account_permission_update.php" hidden>
+            <input id="userId" type="hidden" name="user_id">
+            <div id="permissionList" class="permission-list"></div>
+            <button type="submit" data-button-id ="common_seve">保存</button>
+        </form>
+        <a class="back-link" href="account.html" data-koumoku-id ="common_homeBack"></a>
+    </main>
+    <script src="account_detail.js"></script>
+    <script src="../ui_master.js"></script>
+</body>
+</html>

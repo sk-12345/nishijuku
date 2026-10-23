@@ -1,54 +1,36 @@
 const API_URL = "register_api.php";
-const roleSelect = document.getElementById("roleSelect");
 const msgEl = document.getElementById("msg");
-
-function showMsg(text, isError) {
-    if (!msgEl) return;
-    msgEl.textContent = text;
-    msgEl.style.display = "block";
-    msgEl.className = isError ? "msg error" : "msg ok";
-}
-
-function escapeHtml(str) {
-    return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-async function loadRoles() {
-    const res = await fetch(API_URL, { cache: "no-store" });
-
-    if (res.status === 401) {
-        location.href = "../login/login.php";
-        return;
-    }
-    if (res.status === 403) {
-        showMsg("���̃y�[�W�ɃA�N�Z�X���錠��������܂���", true);
-        roleSelect.innerHTML = `<option value="">�����Ȃ�</option>`;
-        roleSelect.disabled = true;
-        return;
-    }
-    if (!res.ok) {
-        showMsg("�ǂݍ��݂Ɏ��s���܂���", true);
-        roleSelect.innerHTML = `<option value="">�G���[</option>`;
-        return;
-    }
-
+const permissionFieldset = document.getElementById("permissionFieldset");
+const permissionList = document.getElementById("permissionList");
+function showMsg(text) { if (!msgEl) return; msgEl.textContent = text; msgEl.style.display = "block"; msgEl.className = "msg error"; }
+async function loadPermissions() {
+    const res = await fetch(API_URL, { cache: "no-store", credentials: "include" });
+    if (res.status === 401) { location.href = "../login/login.php"; return; }
+    if (res.status === 403) { showMsg("このページにアクセスする権限がありません"); return; }
+    if (!res.ok) { showMsg("権限情報の読み込みに失敗しました"); return; }
     const data = await res.json();
-    const roles = data.selectable_roles ?? [];
-
-    if (!roles.length) {
-        roleSelect.innerHTML = `<option value="">�I����������܂���</option>`;
-        roleSelect.disabled = true;
+    if (!data.permission_labels) {
+        showMsg("APIから権限の表示名を取得できませんでした");
         return;
     }
+    permissionList.replaceChildren();
+    for (const [flag, logicalName] of Object.entries(data.permission_labels)) {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        const span = document.createElement("span");
 
-    roleSelect.innerHTML = roles
-        .map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(r.name)}</option>`)
-        .join("");
+        input.type = "checkbox";
+        input.name = flag;
+        input.value = "1";
+        input.disabled = flag === "system_flg" && data.me?.is_system !== true;
+        span.textContent = logicalName || flag;
+
+        label.append(input, span);
+        permissionList.append(label);
+    }
+    const createButton = permissionFieldset.closest("form")?.querySelector('button[type="submit"]');
+    const createName = (data.display_master?.button ?? []).find(row => row.system_key === "register");
+    if (createButton && createName) createButton.textContent = createName.display_name;
+    permissionFieldset.disabled = false;
 }
-
-loadRoles();
+loadPermissions().catch(() => showMsg("権限情報の読み込みに失敗しました"));

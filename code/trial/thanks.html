@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>応募ありがとうございました | 西塾柔道クラブ</title>
+    <title>応募ありがとうございました | 初柔会西塾</title>
     <link rel="stylesheet" href="trial.css" />
 </head>
 <body>
@@ -23,7 +23,7 @@
             </p>
 
             <div class="actions" style="margin-top:16px;">
-                <a class="btn" href="../index/index.html" style="display:inline-block; text-decoration:none;">トップへ</a>
+                <a class="btn" href="../../index.html" style="display:inline-block; text-decoration:none;">トップへ</a>
                 <a class="btn ghost" href="trial.html" style="display:inline-block; text-decoration:none;">もう一度応募する</a>
             </div>
         </main>
@@ -34,16 +34,19 @@
     </div>
 
     <script>
-        // 任意：保護者名があれば表示
-        const params = new URLSearchParams(location.search);
-        const name = params.get("name");
-        if (name) {
-            const safe = name.replace(/[<>"'&]/g, (c) => ({
-                "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;", "&": "&amp;"
-            }[c]));
-            document.getElementById("thanksText").innerHTML =
-                `${safe} 様<br>応募を受け付けました。<br>担当よりご連絡いたします。`;
-        }
+(() => {
+            const params = new URLSearchParams(location.search);
+            const name = params.get("name");
+            const thanksText = document.getElementById("thanksText");
+
+            if (name && thanksText) {
+                thanksText.textContent =
+                    `${name} 様\n応募を受け付けました。\n担当よりご連絡いたします。`;
+
+                thanksText.style.whiteSpace = "pre-line";
+            }
+})();
     </script>
+    <script src="../ui_master.js"></script>
 </body>
 </html>

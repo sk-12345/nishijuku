@@ -2,6 +2,8 @@
 session_start();
 
 require_once '../db.php';
+require_once '../permissions.php';
+require_once '../display_master.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
@@ -12,36 +14,22 @@ if (!isset($_SESSION['user'])) {
 }
 
 $user = $_SESSION['user'];
+$role = currentRole($pdo);
 
 $roleId = isset($user['role_id']) ? (int)$user['role_id'] : 0;
-
-/**
- * ✅ rolesテーブルから「id => role_name」の配列を作る
- */
-function getRoleMap(PDO $pdo): array {
-    $stmt = $pdo->query("SELECT id, role_name FROM roles");
-    $map = [];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $map[(int)$row['id']] = (string)$row['role_name'];
-    }
-    return $map;
-}
-
-$roleMap  = getRoleMap($pdo);
-
-$roleName = $roleMap[$roleId] ?? '不明';
-
-$isAdminOrSystem = in_array($roleId, [1, 2], true);
-$isPhoto = ($roleId === 3); // ★ PHOTOが3の場合（違うなら数字を合わせて）
 
 echo json_encode([
     'user' => [
         'fullname' => $user['fullname'] ?? '',
-        'role_id' => $roleId,
-        'role_name' => $roleName
+        'role_id' => $roleId
     ],
     'flags' => [
-        'is_admin_or_system' => $isAdminOrSystem,
-        'is_photo' => $isPhoto
-    ]
+        'create_account' => hasPermission($role, 'create_account_flg'),
+        'account' => hasPermission($role, 'account_flg'),
+        'update_confirmation' => hasPermission($role, 'update_confirmation_flg'),
+        'practice' => hasPermission($role, 'practice_flg'),
+        'game' => hasPermission($role, 'game_flg'),
+        'event' => hasPermission($role, 'event_flg')
+    ],
+    'display_master' => standardDisplayData($pdo)
 ], JSON_UNESCAPED_UNICODE);

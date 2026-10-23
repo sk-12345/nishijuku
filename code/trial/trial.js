@@ -30,6 +30,7 @@ function participantHTML(i) {
           <option value="幼児">幼児</option>
           <option value="小学生">小学生</option>
           <option value="中学生">中学生</option>
+          <option value="高校生">高校生</option>
         </select>
       </label>
 
@@ -89,6 +90,10 @@ function onCategoryChange(select) {
         gradeSelect.required = true;
         fillGradeOptions(gradeSelect, 6);
     } else if (category === "中学生") {
+        gradeField.style.display = "";
+        gradeSelect.required = true;
+        fillGradeOptions(gradeSelect, 3);
+    } else if (category === "高校生") {
         gradeField.style.display = "";
         gradeSelect.required = true;
         fillGradeOptions(gradeSelect, 3);
