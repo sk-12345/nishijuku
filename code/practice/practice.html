@@ -1,73 +1,48 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <title>練習風景 | 初柔会西塾</title>
 
-    <title>練習風景 | 西塾柔道クラブ</title>
-
-    <link rel="stylesheet"
-          href="practice.css">
-
+    <link rel="stylesheet" href="practice.css">
 </head>
-
 <body>
 
     <div class="practice-wrapper">
 
-        <h2 class="page-title">
-            練習風景
-        </h2>
+        <h2 class="page-title" data-koumoku-id="ui_practice"></h2>
 
         <div class="back-links">
-
-            <a href="../../index.html">
-                ホームに戻る
-            </a>
-
+            <a href="../../index.html">ホームに戻る</a>
         </div>
 
-        <div class="practice-grid"
-             id="practiceGrid">
-
-            <p class="no-practice">
-                読み込み中...
-            </p>
-
+        <div class="practice-grid" id="practiceGrid">
+            <p class="no-practice">読み込み中...</p>
         </div>
 
         <div class="back-links">
-
-            <a href="../../index.html">
-                ホームに戻る
-            </a>
-
+            <a href="../../index.html">ホームに戻る</a>
         </div>
 
     </div>
 
-
-    <div id="modal" class="modal">
-
+    <div id="modal" class="modal" style="display: none;">
         <div class="modal-content">
 
-            <span id="modal-close"
-                  class="modal-close">×</span>
+            <span id="modal-close" class="modal-close">×</span>
 
             <h3 id="modal-title"></h3>
 
-            <img id="modal-img">
+            <img id="modal-img" alt="練習風景の拡大写真">
 
             <p id="modal-text"></p>
 
         </div>
-
     </div>
 
     <script src="practice.js"></script>
-
+    <script src="../ui_master.js"></script>
 </body>
 </html>

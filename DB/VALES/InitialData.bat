@@ -5,7 +5,7 @@ setlocal EnableExtensions EnableDelayedExpansion
 REM ============================================================
 REM MySQL / MariaDB 初期データ投入バッチ（バックアップなし）
 REM バッチ本体: Shift_JIS / CRLF
-REM 投入SQLファイル: Shift_JIS
+REM 投入SQLファイル: UTF-8（BOMなし）
 REM ============================================================
 
 REM 読み込むフォルダ名は、この1か所だけ変更してください。
@@ -65,7 +65,7 @@ if /I not "%ANS%"=="y" (
     exit /b 0
 )
 
-"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=sjis --batch --skip-column-names -e "SELECT 1;" "%DB_NAME%" > nul 2>&1
+"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=utf8mb4 --batch --skip-column-names -e "SELECT 1;" "%DB_NAME%" > nul 2>&1
 if errorlevel 1 (
     echo [ERROR] DBへの接続に失敗しました。
     echo MySQL/MariaDBの起動状態と接続情報を確認してください。
@@ -103,14 +103,14 @@ echo [TABLE] %TABLE%
 >> "%LOG_FILE%" echo [TABLE] %TABLE%
 
 echo [TRUNCATE] %TABLE%
-"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=sjis -e "TRUNCATE TABLE `%DB_NAME%`.`%TABLE%`;" >> "%LOG_FILE%" 2>&1
+"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=utf8mb4 -e "TRUNCATE TABLE `%DB_NAME%`.`%TABLE%`;" >> "%LOG_FILE%" 2>&1
 if errorlevel 1 (
     echo [ERROR] TRUNCATE失敗: %TABLE%
     exit /b 1
 )
 
 echo [EXECUTE] %~nx1
-"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=sjis "%DB_NAME%" < "%SQL_FILE%" >> "%LOG_FILE%" 2>&1
+"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=utf8mb4 "%DB_NAME%" < "%SQL_FILE%" >> "%LOG_FILE%" 2>&1
 if errorlevel 1 (
     echo [ERROR] SQL実行失敗: %~nx1
     exit /b 1
@@ -118,7 +118,7 @@ if errorlevel 1 (
 
 echo [AUDIT / FLAG UPDATE] %TABLE%
 set "UPDATE_COUNT=0"
-"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=sjis --batch --skip-column-names -e "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='%DB_NAME%' AND TABLE_NAME='%TABLE%' ORDER BY ORDINAL_POSITION;" > "%COLUMN_FILE%" 2>> "%LOG_FILE%"
+"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=utf8mb4 --batch --skip-column-names -e "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='%DB_NAME%' AND TABLE_NAME='%TABLE%' ORDER BY ORDINAL_POSITION;" > "%COLUMN_FILE%" 2>> "%LOG_FILE%"
 if errorlevel 1 exit /b 1
 for /f "usebackq delims=" %%C in ("%COLUMN_FILE%") do (
     call :UPDATE_COLUMN "%%C"
@@ -150,15 +150,15 @@ if /I "%COLUMN:~-3%"=="flg" goto UPDATE_FLAG
 exit /b 0
 
 :UPDATE_DATETIME
-"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=sjis -e "UPDATE `%DB_NAME%`.`%TABLE%` SET `%COLUMN%`=CURRENT_TIMESTAMP;" >> "%LOG_FILE%" 2>&1
+"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=utf8mb4 -e "UPDATE `%DB_NAME%`.`%TABLE%` SET `%COLUMN%`=CURRENT_TIMESTAMP;" >> "%LOG_FILE%" 2>&1
 goto UPDATE_RESULT
 
 :UPDATE_BATCH
-"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=sjis -e "UPDATE `%DB_NAME%`.`%TABLE%` SET `%COLUMN%`='Batch';" >> "%LOG_FILE%" 2>&1
+"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=utf8mb4 -e "UPDATE `%DB_NAME%`.`%TABLE%` SET `%COLUMN%`='Batch';" >> "%LOG_FILE%" 2>&1
 goto UPDATE_RESULT
 
 :UPDATE_FLAG
-"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=sjis -e "UPDATE `%DB_NAME%`.`%TABLE%` SET `%COLUMN%`=0 WHERE `%COLUMN%` IS NULL;" >> "%LOG_FILE%" 2>&1
+"%MYSQL_EXE%" -h "%DB_HOST%" -P "%DB_PORT%" -u "%DB_USER%" %PASS_OPT% --default-character-set=utf8mb4 -e "UPDATE `%DB_NAME%`.`%TABLE%` SET `%COLUMN%`=0 WHERE `%COLUMN%` IS NULL;" >> "%LOG_FILE%" 2>&1
 
 :UPDATE_RESULT
 if errorlevel 1 (

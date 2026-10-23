@@ -19,7 +19,7 @@ function currentRole(PDO $pdo): array
     }
 
     $columns = implode(', ', array_map(static fn(string $column): string => "r.$column", ROLE_PERMISSION_COLUMNS));
-    $stmt = $pdo->prepare("SELECT u.id AS user_id, u.role_id, $columns FROM users u JOIN roles r ON r.id = u.role_id WHERE u.id = ? LIMIT 1");
+    $stmt = $pdo->prepare("SELECT u.id AS user_id, r.id AS role_id, $columns FROM users u JOIN roles r ON r.id = u.id WHERE u.id = ? LIMIT 1");
     $stmt->execute([$userId]);
     return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 }
@@ -69,7 +69,7 @@ function requirePermission(PDO $pdo, string $permission, bool $json = true): arr
 function roleByUserId(PDO $pdo, int $userId, bool $forUpdate = false): array
 {
     $columns = implode(', ', array_map(static fn(string $column): string => "r.$column", ROLE_PERMISSION_COLUMNS));
-    $sql = "SELECT u.id AS user_id, u.role_id, $columns FROM users u JOIN roles r ON r.id = u.role_id WHERE u.id = ?";
+    $sql = "SELECT u.id AS user_id, r.id AS role_id, $columns FROM users u JOIN roles r ON r.id = u.id WHERE u.id = ?";
     if ($forUpdate) {
         $sql .= ' FOR UPDATE';
     }
@@ -115,7 +115,7 @@ function normalizedPermissionFlags(array $input): array
     return $flags;
 }
 
-function insertDedicatedRole(PDO $pdo, array $flags, string $auditUser, string $functionId): int
+function insertDedicatedRole(PDO $pdo, array $flags, string $auditUser, string $functionId, ?int $userId = null): int
 {
     $values = array_map(
         static fn(string $flag): int => (int)($flags[$flag] ?? 0),
@@ -124,10 +124,14 @@ function insertDedicatedRole(PDO $pdo, array $flags, string $auditUser, string $
     $hasAppendDatetime = (bool)$pdo->query("SHOW COLUMNS FROM roles LIKE 'append_datetime'")->fetch(PDO::FETCH_ASSOC);
     $appendDatetimeColumn = $hasAppendDatetime ? ', append_datetime' : '';
     $appendDatetimeValue = $hasAppendDatetime ? ', NOW()' : '';
-    $sql = "INSERT INTO roles (system_flg, create_account_flg, account_flg, update_confirmation_flg, practice_flg, game_flg, event_flg{$appendDatetimeColumn}, append_user_id, append_func_id, update_datetime, update_user_id, update_func_id, lock_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?{$appendDatetimeValue}, ?, ?, NOW(), ?, ?, CURRENT_TIMESTAMP)";
+    $idColumn = $userId === null ? '' : 'id, ';
+    $idPlaceholder = $userId === null ? '' : '?, ';
+    $sql = "INSERT INTO roles ({$idColumn}system_flg, create_account_flg, account_flg, update_confirmation_flg, practice_flg, game_flg, event_flg{$appendDatetimeColumn}, append_user_id, append_func_id, update_datetime, update_user_id, update_func_id, lock_timestamp) VALUES ({$idPlaceholder}?, ?, ?, ?, ?, ?, ?{$appendDatetimeValue}, ?, ?, NOW(), ?, ?, CURRENT_TIMESTAMP)";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([...$values, $auditUser, $functionId, $auditUser, $functionId]);
-    return (int)$pdo->lastInsertId();
+    $params = [...$values, $auditUser, $functionId, $auditUser, $functionId];
+    if ($userId !== null) array_unshift($params, $userId);
+    $stmt->execute($params);
+    return $userId ?? (int)$pdo->lastInsertId();
 }
 
 function canAssignRole(array $actorRole, array $newRole): bool

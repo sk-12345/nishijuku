@@ -1,6 +1,6 @@
 CREATE TABLE roles (
 id INT(11) AUTO_INCREMENT NOT NULL COMMENT 'ユーザID', PRIMARY KEY (id),
-system_flg INT(1) DEFAULT 0 NOT NULL COMMENT 'システム管理フラグ',
+system_flg INT(1) DEFAULT 0 NOT NULL COMMENT 'システムフラグ',
 create_account_flg INT(1) DEFAULT 0 NOT NULL COMMENT '新規アカウント作成フラグ',
 account_flg INT(2) DEFAULT 0 NOT NULL COMMENT 'アカウント管理フラグ',
 update_confirmation_flg INT(3) DEFAULT 0 NOT NULL COMMENT '更新履歴フラグ',

@@ -2,15 +2,15 @@
 declare(strict_types=1);
 
 /**
- * 標準マスタを表示順どおりに返す。システム用キーの重複は許可する。
+ * 標準マスタを返す。
  */
 function displayMasterRows(PDO $pdo, string $master): array
 {
     $definitions = [
-        'koumoku' => ['table' => 'koumoku', 'key' => 'koumoku_key'],
-        'button' => ['table' => 'button', 'key' => 'button_key'],
-        'code' => ['table' => 'code', 'key' => 'code_key'],
-        'message' => ['table' => 'message', 'key' => 'message_key'],
+        'koumoku' => ['table' => 'koumoku', 'key' => 'koumoku_id'],
+        'button' => ['table' => 'button', 'key' => 'button_id'],
+        'code' => ['table' => 'code', 'key' => 'code_id', 'order' => 'sort_order, id'],
+        'message' => ['table' => 'message', 'key' => 'message_id'],
     ];
     if (!isset($definitions[$master])) {
         throw new InvalidArgumentException('Unknown display master: ' . $master);
@@ -18,11 +18,10 @@ function displayMasterRows(PDO $pdo, string $master): array
 
     $definition = $definitions[$master];
     $sql = sprintf(
-        'SELECT `%s` AS system_key, display_name, description, sort_order FROM `%s` WHERE delete_flg = 0 ORDER BY `%s`, sort_order, `%s_id`',
+        'SELECT `%s` AS system_key, display_name, description FROM `%s` ORDER BY %s',
         $definition['key'],
         $definition['table'],
-        $definition['key'],
-        $definition['table']
+        $definition['order'] ?? 'id'
     );
     return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 }

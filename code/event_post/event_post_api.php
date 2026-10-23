@@ -27,7 +27,7 @@ $audit_user = (string)($_SESSION['user']['login_id'] ?? $user_id);
 ========================= */
 
 $UPLOAD_DIR_REAL = __DIR__ . '/../../img/events/';
-$UPLOAD_DIR_URL  = '/nishijuku/img/events/';   // ← 本番用
+$UPLOAD_DIR_URL='../../img/events/';
 
 if (!is_dir($UPLOAD_DIR_REAL)) {
     mkdir($UPLOAD_DIR_REAL, 0777, true);

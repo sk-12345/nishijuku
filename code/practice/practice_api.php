@@ -3,7 +3,7 @@ require_once '../db.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
-$UPLOAD_DIR_URL = '/nishijuku/img/practices/';
+$UPLOAD_DIR_URL = '../../img/practices/';
 
 
 /* 投稿取得 */

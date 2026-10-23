@@ -1,7 +1,7 @@
 const API_URL = "register_api.php";
 const msgEl = document.getElementById("msg");
 const permissionFieldset = document.getElementById("permissionFieldset");
-const systemFlag = document.getElementById("systemFlag");
+const permissionList = document.getElementById("permissionList");
 function showMsg(text) { if (!msgEl) return; msgEl.textContent = text; msgEl.style.display = "block"; msgEl.className = "msg error"; }
 async function loadPermissions() {
     const res = await fetch(API_URL, { cache: "no-store", credentials: "include" });
@@ -9,21 +9,28 @@ async function loadPermissions() {
     if (res.status === 403) { showMsg("このページにアクセスする権限がありません"); return; }
     if (!res.ok) { showMsg("権限情報の読み込みに失敗しました"); return; }
     const data = await res.json();
-    const permissionLabels = (data.display_master?.koumoku ?? [])
-        .filter(row => row.system_key === "permission");
-    permissionLabels.forEach((row, index) => {
-        const flag = ["system_flg", "create_account_flg", "account_flg", "update_confirmation_flg", "practice_flg", "game_flg", "event_flg"][index];
-        const label = row.display_name;
-        if (!flag) return;
-        const input = permissionFieldset.querySelector(`input[name="${flag}"]`);
-        if (!input) return;
-        const labelElement = input.closest("label");
-        if (labelElement) labelElement.replaceChildren(input, document.createTextNode(` ${label}`));
-    });
+    if (!data.permission_labels) {
+        showMsg("APIから権限の表示名を取得できませんでした");
+        return;
+    }
+    permissionList.replaceChildren();
+    for (const [flag, logicalName] of Object.entries(data.permission_labels)) {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        const span = document.createElement("span");
+
+        input.type = "checkbox";
+        input.name = flag;
+        input.value = "1";
+        input.disabled = flag === "system_flg" && data.me?.is_system !== true;
+        span.textContent = logicalName || flag;
+
+        label.append(input, span);
+        permissionList.append(label);
+    }
     const createButton = permissionFieldset.closest("form")?.querySelector('button[type="submit"]');
     const createName = (data.display_master?.button ?? []).find(row => row.system_key === "register");
     if (createButton && createName) createButton.textContent = createName.display_name;
     permissionFieldset.disabled = false;
-    if (data.me?.is_system !== true) { systemFlag.checked = false; systemFlag.disabled = true; }
 }
-loadPermissions();
+loadPermissions().catch(() => showMsg("権限情報の読み込みに失敗しました"));

@@ -18,8 +18,7 @@ SELECT
     id,
     login_id,
     password_hash,
-    name,
-    role_id
+    name
 FROM users
 WHERE login_id = ?
 ";
@@ -37,7 +36,6 @@ if ($user && password_verify($password, $user['password_hash'])) {
         'id'       => (int)$user['id'],
         'login_id' => $user['login_id'],
         'fullname' => $user['name'],
-        'role_id'  => (int)$user['role_id'],
     ];
 
     // 成功 → ホーム（HTML）

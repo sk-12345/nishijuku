@@ -21,9 +21,10 @@ try {
         $pdo->rollBack();
         denyRequest(409, 'そのログインIDはすでに使用されています', false);
     }
-    $roleId = insertDedicatedRole($pdo, $flags, $auditUser, 'register');
-    $stmt = $pdo->prepare("INSERT INTO users (login_id, password_hash, name, role_id, append_datetime, append_user_id, append_func_id, update_datetime, update_user_id, update_func_id, lock_timestamp) VALUES (?, ?, ?, ?, NOW(), ?, 'register', NOW(), ?, 'register', CURRENT_TIMESTAMP)");
-    $stmt->execute([$loginId, $hash, $name, $roleId, $auditUser, $auditUser]);
+    $stmt = $pdo->prepare("INSERT INTO users (login_id, password_hash, name, append_datetime, append_user_id, append_func_id, update_datetime, update_user_id, update_func_id, lock_timestamp) VALUES (?, ?, ?, NOW(), ?, 'register', NOW(), ?, 'register', CURRENT_TIMESTAMP)");
+    $stmt->execute([$loginId, $hash, $name, $auditUser, $auditUser]);
+    $userId = (int)$pdo->lastInsertId();
+    insertDedicatedRole($pdo, $flags, $auditUser, 'register', $userId);
     $pdo->commit();
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();

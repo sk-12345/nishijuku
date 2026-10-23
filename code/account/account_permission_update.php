@@ -36,17 +36,8 @@ try {
     }
 
     $values = array_map(static fn(string $flag): int => $flags[$flag], ROLE_PERMISSION_COLUMNS);
-    $countStmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE role_id=?');
-    $countStmt->execute([(int)$target['role_id']]);
-
-    if ((int)$countStmt->fetchColumn() > 1) {
-        $newRoleId = insertDedicatedRole($pdo, $flags, $auditUser, 'account_permission_update');
-        $stmt = $pdo->prepare("UPDATE users SET role_id=?, update_datetime=NOW(), update_user_id=?, update_func_id='account_permission_update', lock_timestamp=CURRENT_TIMESTAMP WHERE id=?");
-        $stmt->execute([$newRoleId, $auditUser, $targetId]);
-    } else {
-        $stmt = $pdo->prepare("UPDATE roles SET system_flg=?, create_account_flg=?, account_flg=?, update_confirmation_flg=?, practice_flg=?, game_flg=?, event_flg=?, update_datetime=NOW(), update_user_id=?, update_func_id='account_permission_update', lock_timestamp=CURRENT_TIMESTAMP WHERE id=?");
-        $stmt->execute([...$values, $auditUser, (int)$target['role_id']]);
-    }
+    $stmt = $pdo->prepare("UPDATE roles SET system_flg=?, create_account_flg=?, account_flg=?, update_confirmation_flg=?, practice_flg=?, game_flg=?, event_flg=?, update_datetime=NOW(), update_user_id=?, update_func_id='account_permission_update', lock_timestamp=CURRENT_TIMESTAMP WHERE id=?");
+    $stmt->execute([...$values, $auditUser, $targetId]);
     $pdo->commit();
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) {

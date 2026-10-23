@@ -3,7 +3,7 @@ require_once '../db.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
-$UPLOAD_DIR_URL='/nishijuku/img/events/';
+$UPLOAD_DIR_URL='../../img/events/';
 
 $stmt=$pdo->query("
 SELECT events.*, append_datetime AS created_at

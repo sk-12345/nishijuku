@@ -15,7 +15,8 @@ return [
 
   // ✅ 受信先（Toで複数）
   'TO_MAIL' => [
-    '346kou3110@gmail.com',
+    '2419judo3110@gmail.com',
+    'nishijuku80@gmail.com'
   ],
 
   // 差出人表示名

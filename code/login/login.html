@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ログイン | 西塾柔道クラブ</title>
+    <title>ログイン | 初柔会西塾</title>
     <link rel="stylesheet" href="login.css" />
 </head>
 <body>
@@ -11,25 +11,23 @@
     <div class="login-wrapper">
         <div class="login-box">
 
-            <h2>ログイン</h2>
+            <h2 data-koumoku-id="login_login"></h2>
 
             <p id="errMsg" class="error-msg" style="display:none;">
                 ユーザーIDまたはパスワードが違います
             </p>
 
             <form action="login_process.php" method="POST">
-                <label>ユーザーID</label>
+                <label data-koumoku-id="common_user"></label>
                 <input type="text" name="username" required>
 
-                <label>パスワード</label>
+                <label data-koumoku-id="common_pass"></label>
                 <input type="password" name="password" required>
 
-                <button type="submit">ログイン</button>
+                <button type="submit" data-button-id="common_login">ログイン</button>
 
                 <div class="back-links">
-                    <a href="../../index.html">
-                        ホームページに戻る
-                    </a>
+                    <a href="../../index.html" data-koumoku-id="common_homeBack">ホームへ戻る</a>
                 </div>
             </form>
 
@@ -37,5 +35,6 @@
     </div>
 
     <script src="login.js"></script>
+    <script src="../ui_master.js"></script>
 </body>
 </html>

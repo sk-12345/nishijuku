@@ -27,7 +27,7 @@ try {
         static fn(string $column): string => "r.$column",
         ROLE_PERMISSION_COLUMNS
     ));
-    $users = $pdo->query("SELECT u.id, u.login_id, u.name, u.role_id, $permissionColumns FROM users u JOIN roles r ON r.id=u.role_id ORDER BY u.role_id, u.id")->fetchAll(PDO::FETCH_ASSOC);
+    $users = $pdo->query("SELECT u.id, u.login_id, u.name, r.id AS role_id, $permissionColumns FROM users u JOIN roles r ON r.id=u.id ORDER BY u.id")->fetchAll(PDO::FETCH_ASSOC);
     foreach ($users as &$user) {
         $targetRole = $user + ['user_id' => $user['id']];
         $user['can_change'] = canEditUserPermissions($actor, $targetRole);
